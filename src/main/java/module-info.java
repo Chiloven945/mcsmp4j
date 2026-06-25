@@ -1,4 +1,5 @@
 module top.chiloven.mcsmp4j {
+
     requires java.net.http;
     requires com.fasterxml.jackson.annotation;
     requires tools.jackson.core;
@@ -9,4 +10,8 @@ module top.chiloven.mcsmp4j {
     exports top.chiloven.mcsmp4j.api;
     exports top.chiloven.mcsmp4j.model;
     exports top.chiloven.mcsmp4j.protocol;
+    exports top.chiloven.mcsmp4j.event;
+    exports top.chiloven.mcsmp4j.discovery;
+    exports top.chiloven.mcsmp4j.version;
+
 }

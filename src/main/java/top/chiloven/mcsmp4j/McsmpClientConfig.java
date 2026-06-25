@@ -2,6 +2,7 @@ package top.chiloven.mcsmp4j;
 
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.ObjectMapper;
+import top.chiloven.mcsmp4j.version.McsmpVersionPolicy;
 
 import javax.net.ssl.SSLContext;
 import java.net.URI;
@@ -24,6 +25,8 @@ public final class McsmpClientConfig {
     private final @Nullable SSLContext sslContext;
     private final Map<String, String> headers;
     private final ObjectMapper objectMapper;
+    private final boolean legacyNotificationPrefix;
+    private final McsmpVersionPolicy versionPolicy;
 
     private McsmpClientConfig(
             Builder builder
@@ -36,6 +39,9 @@ public final class McsmpClientConfig {
         this.sslContext = builder.sslContext;
         this.headers = Map.copyOf(builder.headers);
         this.objectMapper = requireNonNull(builder.objectMapper, "objectMapper");
+        this.legacyNotificationPrefix = builder.legacyNotificationPrefix
+                || builder.versionPolicy == McsmpVersionPolicy.COMPATIBLE;
+        this.versionPolicy = requireNonNull(builder.versionPolicy, "versionPolicy");
     }
 
     private static Duration positive(Duration duration, String name) {
@@ -82,6 +88,14 @@ public final class McsmpClientConfig {
         return objectMapper;
     }
 
+    public boolean legacyNotificationPrefix() {
+        return legacyNotificationPrefix;
+    }
+
+    public McsmpVersionPolicy versionPolicy() {
+        return versionPolicy;
+    }
+
     public static final class Builder {
 
         private final Map<String, String> headers = new LinkedHashMap<>();
@@ -92,6 +106,8 @@ public final class McsmpClientConfig {
         private Duration requestTimeout = Duration.ofSeconds(30);
         private @Nullable SSLContext sslContext;
         private ObjectMapper objectMapper = McsmpObjectMapper.create();
+        private boolean legacyNotificationPrefix;
+        private McsmpVersionPolicy versionPolicy = McsmpVersionPolicy.COMPATIBLE;
 
         private Builder() {
         }
@@ -149,6 +165,16 @@ public final class McsmpClientConfig {
 
         public Builder objectMapper(ObjectMapper objectMapper) {
             this.objectMapper = requireNonNull(objectMapper, "objectMapper");
+            return this;
+        }
+
+        public Builder legacyNotificationPrefix(boolean legacyNotificationPrefix) {
+            this.legacyNotificationPrefix = legacyNotificationPrefix;
+            return this;
+        }
+
+        public Builder versionPolicy(McsmpVersionPolicy versionPolicy) {
+            this.versionPolicy = requireNonNull(versionPolicy, "versionPolicy");
             return this;
         }
 

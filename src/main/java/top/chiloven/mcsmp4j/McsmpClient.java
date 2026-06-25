@@ -1,13 +1,21 @@
 package top.chiloven.mcsmp4j;
 
 import top.chiloven.mcsmp4j.api.*;
+import top.chiloven.mcsmp4j.discovery.McsmpCapabilities;
+import top.chiloven.mcsmp4j.discovery.McsmpDiscovery;
+import top.chiloven.mcsmp4j.event.McsmpEvents;
 import top.chiloven.mcsmp4j.internal.JsonRpcTransport;
 import top.chiloven.mcsmp4j.internal.RawApiImpl;
 import top.chiloven.mcsmp4j.internal.api.*;
+import top.chiloven.mcsmp4j.internal.discovery.McsmpDiscoveryImpl;
+import top.chiloven.mcsmp4j.internal.event.McsmpEventDecoder;
+import top.chiloven.mcsmp4j.internal.event.McsmpEventsImpl;
 import top.chiloven.mcsmp4j.protocol.JsonRpcNotificationListener;
 import top.chiloven.mcsmp4j.protocol.JsonRpcSubscription;
+import top.chiloven.mcsmp4j.version.McsmpVersionPolicy;
 
 import java.net.URI;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Objects.requireNonNull;
@@ -31,6 +39,9 @@ public final class McsmpClient implements AutoCloseable {
     private final OperatorsApi operators;
     private final ServerSettingsApi serverSettings;
     private final GamerulesApi gamerules;
+    private final McsmpDiscovery discovery;
+    private final McsmpEventsImpl events;
+    private volatile McsmpCapabilities capabilities;
 
     private McsmpClient(
             McsmpClientConfig config
@@ -46,6 +57,11 @@ public final class McsmpClient implements AutoCloseable {
         this.operators = new OperatorsApiImpl(raw);
         this.serverSettings = new ServerSettingsApiImpl(raw);
         this.gamerules = new GamerulesApiImpl(raw);
+        this.discovery = new McsmpDiscoveryImpl(raw);
+        this.events = new McsmpEventsImpl(
+                new McsmpEventDecoder(config.objectMapper(), config.legacyNotificationPrefix()),
+                transport::subscribe
+        );
     }
 
     public static Builder builder() {
@@ -109,16 +125,37 @@ public final class McsmpClient implements AutoCloseable {
         return gamerules;
     }
 
+    public McsmpEvents events() {
+        return events;
+    }
+
+    public McsmpDiscovery discovery() {
+        return discovery;
+    }
+
+    public CompletableFuture<McsmpCapabilities> discover() {
+        return discovery.discover().thenApply(discovered -> {
+            capabilities = discovered;
+            return discovered;
+        });
+    }
+
+    public Optional<McsmpCapabilities> capabilities() {
+        return Optional.ofNullable(capabilities);
+    }
+
     public JsonRpcSubscription onNotification(JsonRpcNotificationListener listener) {
         return transport.subscribe(listener);
     }
 
     public CompletableFuture<Void> closeAsync() {
+        events.close();
         return transport.closeAsync();
     }
 
     @Override
     public void close() {
+        events.close();
         transport.close();
     }
 
@@ -171,6 +208,16 @@ public final class McsmpClient implements AutoCloseable {
 
         public Builder objectMapper(tools.jackson.databind.ObjectMapper objectMapper) {
             delegate.objectMapper(objectMapper);
+            return this;
+        }
+
+        public Builder legacyNotificationPrefix(boolean legacyNotificationPrefix) {
+            delegate.legacyNotificationPrefix(legacyNotificationPrefix);
+            return this;
+        }
+
+        public Builder versionPolicy(McsmpVersionPolicy versionPolicy) {
+            delegate.versionPolicy(versionPolicy);
             return this;
         }
 
