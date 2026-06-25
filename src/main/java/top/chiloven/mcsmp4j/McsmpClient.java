@@ -1,7 +1,13 @@
 package top.chiloven.mcsmp4j;
 
+import top.chiloven.mcsmp4j.api.AllowlistApi;
+import top.chiloven.mcsmp4j.api.PlayersApi;
+import top.chiloven.mcsmp4j.api.ServerApi;
 import top.chiloven.mcsmp4j.internal.JsonRpcTransport;
 import top.chiloven.mcsmp4j.internal.RawApiImpl;
+import top.chiloven.mcsmp4j.internal.api.AllowlistApiImpl;
+import top.chiloven.mcsmp4j.internal.api.PlayersApiImpl;
+import top.chiloven.mcsmp4j.internal.api.ServerApiImpl;
 import top.chiloven.mcsmp4j.protocol.JsonRpcNotificationListener;
 import top.chiloven.mcsmp4j.protocol.JsonRpcSubscription;
 
@@ -13,14 +19,17 @@ import static java.util.Objects.requireNonNull;
 /**
  * MCSMP client entry point.
  *
- * <p>M1 exposes connection lifecycle, raw JSON-RPC calls, and raw notifications. Higher-level typed
- * APIs are expected to build on top of {@link #raw()}.</p>
+ * <p>Exposes connection lifecycle, raw JSON-RPC calls, raw notifications, and the core strongly-typed
+ * MCSMP APIs implemented by this library.</p>
  */
 public final class McsmpClient implements AutoCloseable {
 
     private final McsmpClientConfig config;
     private final JsonRpcTransport transport;
     private final RawApi raw;
+    private final AllowlistApi allowlist;
+    private final PlayersApi players;
+    private final ServerApi server;
 
     private McsmpClient(
             McsmpClientConfig config
@@ -28,6 +37,9 @@ public final class McsmpClient implements AutoCloseable {
         this.config = requireNonNull(config, "config");
         this.transport = new JsonRpcTransport(config);
         this.raw = new RawApiImpl(transport, config.objectMapper());
+        this.allowlist = new AllowlistApiImpl(raw);
+        this.players = new PlayersApiImpl(raw);
+        this.server = new ServerApiImpl(raw);
     }
 
     public static Builder builder() {
@@ -57,6 +69,18 @@ public final class McsmpClient implements AutoCloseable {
 
     public RawApi raw() {
         return raw;
+    }
+
+    public AllowlistApi allowlist() {
+        return allowlist;
+    }
+
+    public PlayersApi players() {
+        return players;
+    }
+
+    public ServerApi server() {
+        return server;
     }
 
     public JsonRpcSubscription onNotification(JsonRpcNotificationListener listener) {
