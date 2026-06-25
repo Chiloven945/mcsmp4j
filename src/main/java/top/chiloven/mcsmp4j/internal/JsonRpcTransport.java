@@ -52,9 +52,7 @@ public final class JsonRpcTransport implements AutoCloseable {
         if (config.origin() != null) {
             builder.header("Origin", config.origin());
         }
-        for (var header : config.headers().entrySet()) {
-            builder.header(header.getKey(), header.getValue());
-        }
+        config.headers().forEach(builder::header);
         config.auth().apply(builder);
 
         return builder.buildAsync(config.endpoint(), new Listener())
@@ -163,9 +161,8 @@ public final class JsonRpcTransport implements AutoCloseable {
     }
 
     private void failPending(Throwable error) {
-        for (var future : pending.values()) {
-            future.completeExceptionally(error);
-        }
+        pending.values()
+                .forEach(future -> future.completeExceptionally(error));
         pending.clear();
     }
 

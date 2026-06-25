@@ -5,7 +5,6 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.NullNode;
-import tools.jackson.databind.node.ObjectNode;
 import top.chiloven.mcsmp4j.McsmpProtocolException;
 import top.chiloven.mcsmp4j.protocol.JsonRpcError;
 import top.chiloven.mcsmp4j.protocol.JsonRpcNotification;
@@ -31,14 +30,14 @@ final class JsonRpcCodec {
             throw new IllegalArgumentException("method must not be blank");
         }
 
-        ObjectNode request = mapper.createObjectNode();
+        var request = mapper.createObjectNode();
         request.put("jsonrpc", JSONRPC_VERSION);
         request.put("method", method);
         request.put("id", id);
         if (params.length > 0) {
             var array = mapper.createArrayNode();
             for (var param : params) {
-                JsonNode node = mapper.valueToTree(param);
+                var node = mapper.valueToTree(param);
                 array.add(node == null ? NullNode.getInstance() : node);
             }
             request.set("params", array);

@@ -1,13 +1,9 @@
 package top.chiloven.mcsmp4j;
 
-import top.chiloven.mcsmp4j.api.AllowlistApi;
-import top.chiloven.mcsmp4j.api.PlayersApi;
-import top.chiloven.mcsmp4j.api.ServerApi;
+import top.chiloven.mcsmp4j.api.*;
 import top.chiloven.mcsmp4j.internal.JsonRpcTransport;
 import top.chiloven.mcsmp4j.internal.RawApiImpl;
-import top.chiloven.mcsmp4j.internal.api.AllowlistApiImpl;
-import top.chiloven.mcsmp4j.internal.api.PlayersApiImpl;
-import top.chiloven.mcsmp4j.internal.api.ServerApiImpl;
+import top.chiloven.mcsmp4j.internal.api.*;
 import top.chiloven.mcsmp4j.protocol.JsonRpcNotificationListener;
 import top.chiloven.mcsmp4j.protocol.JsonRpcSubscription;
 
@@ -30,6 +26,11 @@ public final class McsmpClient implements AutoCloseable {
     private final AllowlistApi allowlist;
     private final PlayersApi players;
     private final ServerApi server;
+    private final BansApi bans;
+    private final IpBansApi ipBans;
+    private final OperatorsApi operators;
+    private final ServerSettingsApi serverSettings;
+    private final GamerulesApi gamerules;
 
     private McsmpClient(
             McsmpClientConfig config
@@ -40,6 +41,11 @@ public final class McsmpClient implements AutoCloseable {
         this.allowlist = new AllowlistApiImpl(raw);
         this.players = new PlayersApiImpl(raw);
         this.server = new ServerApiImpl(raw);
+        this.bans = new BansApiImpl(raw);
+        this.ipBans = new IpBansApiImpl(raw);
+        this.operators = new OperatorsApiImpl(raw);
+        this.serverSettings = new ServerSettingsApiImpl(raw);
+        this.gamerules = new GamerulesApiImpl(raw);
     }
 
     public static Builder builder() {
@@ -81,6 +87,26 @@ public final class McsmpClient implements AutoCloseable {
 
     public ServerApi server() {
         return server;
+    }
+
+    public BansApi bans() {
+        return bans;
+    }
+
+    public IpBansApi ipBans() {
+        return ipBans;
+    }
+
+    public OperatorsApi operators() {
+        return operators;
+    }
+
+    public ServerSettingsApi serverSettings() {
+        return serverSettings;
+    }
+
+    public GamerulesApi gamerules() {
+        return gamerules;
     }
 
     public JsonRpcSubscription onNotification(JsonRpcNotificationListener listener) {

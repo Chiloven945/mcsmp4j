@@ -20,13 +20,13 @@ final class NotificationDispatcher {
     }
 
     void dispatch(JsonRpcNotification notification) {
-        for (var listener : listeners) {
+        listeners.forEach(listener -> {
             try {
                 listener.onNotification(notification);
             } catch (RuntimeException ignored) {
                 // Listener failures must not break the underlying MCSMP session.
             }
-        }
+        });
     }
 
 }
