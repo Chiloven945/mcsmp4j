@@ -1,5 +1,5 @@
 [versions]
-jackson = "3.0.0"
+jackson = "3.2.0"
 jspecify = "1.0.0"
 junit = "6.0.0"
 assertj = "3.27.6"
