@@ -14,6 +14,15 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Immutable connection configuration for {@link McsmpClient}.
+ *
+ * <p>A configuration contains everything needed to open the management WebSocket: endpoint URI, authentication
+ * strategy, optional {@code Origin} header, TLS customization, timeout values, JSON mapper, custom HTTP headers, and
+ * version-compatibility behavior. Instances are created through {@link #builder()} and can be reused to create multiple
+ * independent clients.</p>
+ *
+ * <p>Unless configured otherwise, the builder uses no authentication, a 10 second connection timeout, a 30 second
+ * request timeout, the default mcsmp4j Jackson mapper, and {@link McsmpVersionPolicy#COMPATIBLE}. Production clients
+ * should normally call {@link Builder#secret(String)} or {@link Builder#auth(McsmpAuth)} before building.</p>
  */
 public final class McsmpClientConfig {
 
@@ -52,50 +61,124 @@ public final class McsmpClientConfig {
         return duration;
     }
 
+    /**
+     * Starts building a client configuration.
+     *
+     * @return a new mutable builder with mcsmp4j defaults
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Returns the WebSocket endpoint URI.
+     *
+     * <p>The URI scheme must be {@code ws} or {@code wss}. The path is usually empty for vanilla servers because
+     * the MCSMP endpoint is exposed directly on the configured management host and port.</p>
+     *
+     * @return the management WebSocket endpoint
+     */
     public URI endpoint() {
         return endpoint;
     }
 
+    /**
+     * Returns the authentication strategy applied during the WebSocket handshake.
+     *
+     * @return the configured authentication strategy
+     */
     public McsmpAuth auth() {
         return auth;
     }
 
+    /**
+     * Returns the optional HTTP {@code Origin} header value.
+     *
+     * <p>Minecraft servers may reject clients whose origin is not included in
+     * {@code management-server-allowed-origins}. The string does not need to be a URL; it only needs to match the
+     * server configuration.</p>
+     *
+     * @return the origin header value, or {@code null} if no origin header should be sent
+     */
     public @Nullable String origin() {
         return origin;
     }
 
+    /**
+     * Returns the maximum duration allowed for the WebSocket opening handshake.
+     *
+     * @return the connection timeout
+     */
     public Duration connectTimeout() {
         return connectTimeout;
     }
 
+    /**
+     * Returns the per-request timeout for JSON-RPC calls.
+     *
+     * @return the request timeout applied to each pending call
+     */
     public Duration requestTimeout() {
         return requestTimeout;
     }
 
+    /**
+     * Returns the optional SSL context used for {@code wss} connections.
+     *
+     * <p>Provide this when connecting to a server that uses a self-signed certificate or a private certificate
+     * authority. When absent, the JDK default SSL context is used.</p>
+     *
+     * @return the custom SSL context, or {@code null} for the JDK default
+     */
     public @Nullable SSLContext sslContext() {
         return sslContext;
     }
 
+    /**
+     * Returns additional HTTP headers added to the WebSocket opening handshake.
+     *
+     * @return an immutable map of header names to header values
+     */
     public Map<String, String> headers() {
         return headers;
     }
 
+    /**
+     * Returns the Jackson mapper used for protocol serialization and deserialization.
+     *
+     * @return the configured object mapper
+     */
     public ObjectMapper objectMapper() {
         return objectMapper;
     }
 
+    /**
+     * Returns whether local event dispatch accepts the pre-release legacy notification prefix.
+     *
+     * <p>When enabled, notifications using the old {@code notification:*} form are normalized to the modern
+     * {@code minecraft:notification/*} form before typed event decoding.</p>
+     *
+     * @return {@code true} if legacy notification prefix compatibility is enabled
+     */
     public boolean legacyNotificationPrefix() {
         return legacyNotificationPrefix;
     }
 
+    /**
+     * Returns the configured protocol-version compatibility policy.
+     *
+     * @return the version policy used by the client configuration
+     */
     public McsmpVersionPolicy versionPolicy() {
         return versionPolicy;
     }
 
+    /**
+     * Mutable builder for {@link McsmpClientConfig}.
+     *
+     * <p>The builder performs validation as values are assigned where possible. {@link #build()} validates that an
+     * endpoint has been supplied and returns an immutable configuration.</p>
+     */
     public static final class Builder {
 
         private final Map<String, String> headers = new LinkedHashMap<>();
@@ -112,6 +195,16 @@ public final class McsmpClientConfig {
         private Builder() {
         }
 
+        /**
+         * Sets the management WebSocket endpoint.
+         *
+         * @param endpoint a {@code ws://} or {@code wss://} URI for the Minecraft management server
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException     if {@code endpoint} is {@code null}
+         * @throws IllegalArgumentException if the URI scheme is not {@code ws} or {@code wss}
+         */
         public Builder endpoint(URI endpoint) {
             this.endpoint = requireNonNull(endpoint, "endpoint");
             var scheme = endpoint.getScheme();
@@ -121,15 +214,42 @@ public final class McsmpClientConfig {
             return this;
         }
 
+        /**
+         * Configures bearer-token authentication using the server management secret.
+         *
+         * <p>This is a convenience method for {@code auth(McsmpAuth.bearer(secret))}.</p>
+         *
+         * @param secret the non-blank management secret
+         *
+         * @return this builder
+         */
         public Builder secret(String secret) {
             return auth(McsmpAuth.bearer(secret));
         }
 
+        /**
+         * Sets the authentication strategy used during the WebSocket handshake.
+         *
+         * @param auth the authentication strategy to use
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException if {@code auth} is {@code null}
+         */
         public Builder auth(McsmpAuth auth) {
             this.auth = requireNonNull(auth, "auth");
             return this;
         }
 
+        /**
+         * Sets the optional HTTP {@code Origin} header.
+         *
+         * @param origin the origin value expected by the server, or {@code null} to omit the header
+         *
+         * @return this builder
+         *
+         * @throws IllegalArgumentException if {@code origin} is blank
+         */
         public Builder origin(@Nullable String origin) {
             if (origin != null && origin.isBlank()) {
                 throw new IllegalArgumentException("origin must not be blank");
@@ -138,21 +258,59 @@ public final class McsmpClientConfig {
             return this;
         }
 
+        /**
+         * Sets the timeout for opening the WebSocket connection.
+         *
+         * @param connectTimeout a positive duration
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException     if {@code connectTimeout} is {@code null}
+         * @throws IllegalArgumentException if the duration is zero or negative
+         */
         public Builder connectTimeout(Duration connectTimeout) {
             this.connectTimeout = positive(connectTimeout, "connectTimeout");
             return this;
         }
 
+        /**
+         * Sets the timeout applied to each JSON-RPC request.
+         *
+         * @param requestTimeout a positive duration
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException     if {@code requestTimeout} is {@code null}
+         * @throws IllegalArgumentException if the duration is zero or negative
+         */
         public Builder requestTimeout(Duration requestTimeout) {
             this.requestTimeout = positive(requestTimeout, "requestTimeout");
             return this;
         }
 
+        /**
+         * Sets the optional SSL context for secure WebSocket connections.
+         *
+         * @param sslContext the SSL context to use for {@code wss://} endpoints, or {@code null} for the JDK default
+         *
+         * @return this builder
+         */
         public Builder sslContext(@Nullable SSLContext sslContext) {
             this.sslContext = sslContext;
             return this;
         }
 
+        /**
+         * Adds or replaces a custom HTTP header for the WebSocket opening handshake.
+         *
+         * @param name  the non-blank header name
+         * @param value the header value
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException     if {@code name} or {@code value} is {@code null}
+         * @throws IllegalArgumentException if {@code name} is blank
+         */
         public Builder header(String name, String value) {
             requireNonNull(name, "name");
             requireNonNull(value, "value");
@@ -163,21 +321,56 @@ public final class McsmpClientConfig {
             return this;
         }
 
+        /**
+         * Sets the Jackson mapper used for all protocol JSON mapping.
+         *
+         * @param objectMapper the mapper to use
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException if {@code objectMapper} is {@code null}
+         */
         public Builder objectMapper(ObjectMapper objectMapper) {
             this.objectMapper = requireNonNull(objectMapper, "objectMapper");
             return this;
         }
 
+        /**
+         * Enables or disables compatibility with the legacy notification prefix.
+         *
+         * <p>This flag is automatically treated as enabled when {@link #versionPolicy(McsmpVersionPolicy)} is set
+         * to {@link McsmpVersionPolicy#COMPATIBLE}.</p>
+         *
+         * @param legacyNotificationPrefix whether to accept legacy notification method names locally
+         *
+         * @return this builder
+         */
         public Builder legacyNotificationPrefix(boolean legacyNotificationPrefix) {
             this.legacyNotificationPrefix = legacyNotificationPrefix;
             return this;
         }
 
+        /**
+         * Sets the high-level compatibility policy used by the client.
+         *
+         * @param versionPolicy the policy to use
+         *
+         * @return this builder
+         *
+         * @throws NullPointerException if {@code versionPolicy} is {@code null}
+         */
         public Builder versionPolicy(McsmpVersionPolicy versionPolicy) {
             this.versionPolicy = requireNonNull(versionPolicy, "versionPolicy");
             return this;
         }
 
+        /**
+         * Builds an immutable client configuration.
+         *
+         * @return the finished configuration
+         *
+         * @throws NullPointerException if no endpoint has been configured
+         */
         public McsmpClientConfig build() {
             return new McsmpClientConfig(this);
         }

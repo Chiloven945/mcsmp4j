@@ -6,6 +6,14 @@ import java.util.regex.Pattern;
 
 /**
  * Semantic version of the MCSMP protocol when advertised by {@code rpc.discover}.
+ *
+ * <p>The protocol version is separate from the Minecraft game version. It identifies management API changes such
+ * as new notifications, changed schemas, and discovery behavior. This record stores the numeric
+ * {@code major.minor.patch} components and implements natural ordering.</p>
+ *
+ * @param major the major version component
+ * @param minor the minor version component
+ * @param patch the patch version component
  */
 public record McsmpProtocolVersion(
         int major,
@@ -13,21 +21,52 @@ public record McsmpProtocolVersion(
         int patch
 ) implements Comparable<McsmpProtocolVersion> {
 
-    public static final McsmpProtocolVersion
-            V1_0_0 = new McsmpProtocolVersion(1, 0, 0),
-            V1_1_0 = new McsmpProtocolVersion(1, 1, 0),
-            V2_0_0 = new McsmpProtocolVersion(2, 0, 0),
-            V3_0_0 = new McsmpProtocolVersion(3, 0, 0),
-            V3_1_0 = new McsmpProtocolVersion(3, 1, 0);
+    /**
+     * Initial protocol version known to mcsmp4j.
+     */
+    public static final McsmpProtocolVersion V1_0_0 = new McsmpProtocolVersion(1, 0, 0);
+
+    /**
+     * Protocol version that added the server activity notification.
+     */
+    public static final McsmpProtocolVersion V1_1_0 = new McsmpProtocolVersion(1, 1, 0);
+
+    /**
+     * Protocol version that introduced typed game-rule values.
+     */
+    public static final McsmpProtocolVersion V2_0_0 = new McsmpProtocolVersion(2, 0, 0);
+
+    /**
+     * Protocol version that made management discovery available before full server startup.
+     */
+    public static final McsmpProtocolVersion V3_0_0 = new McsmpProtocolVersion(3, 0, 0);
+
+    /**
+     * Protocol version that added world-upgrade notifications.
+     */
+    public static final McsmpProtocolVersion V3_1_0 = new McsmpProtocolVersion(3, 1, 0);
 
     private static final Pattern SEMVER = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(?:[-+].*)?$");
 
+    /**
+     * Validates that all semantic-version components are non-negative.
+     */
     public McsmpProtocolVersion {
         if (major < 0 || minor < 0 || patch < 0) {
             throw new IllegalArgumentException("protocol version components must not be negative");
         }
     }
 
+    /**
+     * Parses a semantic version string.
+     *
+     * <p>Build metadata and pre-release suffixes are accepted and ignored for ordering because MCSMP feature gates
+     * currently use only the numeric components.</p>
+     *
+     * @param value the version string to parse
+     *
+     * @return the parsed version, or empty when the string does not contain a semantic version
+     */
     public static Optional<McsmpProtocolVersion> parse(String value) {
         Objects.requireNonNull(value, "value");
         var matcher = SEMVER.matcher(value.trim());
@@ -41,10 +80,24 @@ public record McsmpProtocolVersion(
         ));
     }
 
+    /**
+     * Checks whether this version is greater than or equal to another version.
+     *
+     * @param other the minimum required version
+     *
+     * @return {@code true} if this version is at least {@code other}
+     */
     public boolean isAtLeast(McsmpProtocolVersion other) {
         return compareTo(other) >= 0;
     }
 
+    /**
+     * Compares two protocol versions by major, then minor, then patch.
+     *
+     * @param other the version to compare with
+     *
+     * @return a negative number, zero, or a positive number according to natural version ordering
+     */
     @Override
     public int compareTo(McsmpProtocolVersion other) {
         Objects.requireNonNull(other, "other");
@@ -59,6 +112,11 @@ public record McsmpProtocolVersion(
         return Integer.compare(patch, other.patch);
     }
 
+    /**
+     * Returns the canonical {@code major.minor.patch} string.
+     *
+     * @return the semantic version string
+     */
     @Override
     public String toString() {
         return major + "." + minor + "." + patch;

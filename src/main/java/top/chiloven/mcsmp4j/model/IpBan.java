@@ -8,7 +8,12 @@ import java.time.Instant;
 import static java.util.Objects.requireNonNull;
 
 /**
- * IP ban entry returned by the MCSMP IP ban list endpoints.
+ * IP ban entry accepted and returned by the MCSMP IP ban list endpoints.
+ *
+ * @param ip      the banned IP address
+ * @param reason  optional human-readable ban reason
+ * @param source  optional source or actor that created the ban
+ * @param expires optional expiration instant; {@code null} means permanent
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record IpBan(
@@ -18,6 +23,9 @@ public record IpBan(
         @Nullable Instant expires
 ) {
 
+    /**
+     * Validates that the IP address is present and optional text fields are non-blank.
+     */
     public IpBan {
         requireNonNull(ip, "ip");
         if (ip.isBlank()) {
@@ -31,18 +39,46 @@ public record IpBan(
         }
     }
 
+    /**
+     * Creates a permanent IP ban with no reason.
+     *
+     * @param ip the IP address to ban
+     *
+     * @return a permanent IP ban entry
+     */
     public static IpBan permanent(String ip) {
         return new IpBan(ip, null, null, null);
     }
 
+    /**
+     * Creates a permanent IP ban with a reason.
+     *
+     * @param ip     the IP address to ban
+     * @param reason the ban reason
+     *
+     * @return a permanent IP ban entry with a reason
+     */
     public static IpBan permanent(String ip, String reason) {
         return new IpBan(ip, requireNonNull(reason, "reason"), null, null);
     }
 
+    /**
+     * Creates a temporary IP ban.
+     *
+     * @param ip      the IP address to ban
+     * @param expires the expiration instant
+     *
+     * @return a temporary IP ban entry
+     */
     public static IpBan temporary(String ip, Instant expires) {
         return new IpBan(ip, null, null, requireNonNull(expires, "expires"));
     }
 
+    /**
+     * Returns whether this ban has an expiration instant.
+     *
+     * @return {@code true} for a temporary ban
+     */
     public boolean hasExpiration() {
         return expires != null;
     }

@@ -6,13 +6,32 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 /**
- * Minecraft server difficulty.
+ * Minecraft server difficulty values used by MCSMP server-settings methods.
+ *
+ * <p>The JSON representation is the lowercase protocol value used by Minecraft, for example {@code "normal"}.
+ * Use {@link top.chiloven.mcsmp4j.api.ServerSettingsApi#difficulty()} to read the current value and
+ * {@link top.chiloven.mcsmp4j.api.ServerSettingsApi#setDifficulty(Difficulty)} to update it.</p>
  */
 public enum Difficulty {
 
+    /**
+     * Peaceful difficulty.
+     */
     PEACEFUL("peaceful"),
+
+    /**
+     * Easy difficulty.
+     */
     EASY("easy"),
+
+    /**
+     * Normal difficulty.
+     */
     NORMAL("normal"),
+
+    /**
+     * Hard difficulty.
+     */
     HARD("hard");
 
     private final String value;
@@ -21,6 +40,15 @@ public enum Difficulty {
         this.value = value;
     }
 
+    /**
+     * Converts a protocol string to a difficulty enum constant.
+     *
+     * @param value the lowercase protocol value
+     *
+     * @return the matching difficulty
+     *
+     * @throws IllegalArgumentException if {@code value} is not a known difficulty string
+     */
     @JsonCreator
     public static Difficulty fromValue(String value) {
         return Arrays.stream(values())
@@ -29,6 +57,11 @@ public enum Difficulty {
                 .orElseThrow(() -> new IllegalArgumentException("Unknown difficulty: " + value));
     }
 
+    /**
+     * Returns the lowercase protocol value used in JSON.
+     *
+     * @return the MCSMP difficulty string
+     */
     @JsonValue
     public String value() {
         return value;
