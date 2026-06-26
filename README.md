@@ -1,6 +1,6 @@
 # mcsmp4j
 
-`mcsmp4j` is a Java 21 client library for the Minecraft Server Management Protocol (MCSMP): JSON-RPC 2.0 over WebSocket
+`mcsmp4j` is a Java client library for the Minecraft Server Management Protocol (MCSMP): JSON-RPC 2.0 over WebSocket
 for dedicated servers.
 
 The library provides three layers:
@@ -19,17 +19,17 @@ The library provides three layers:
 
 ```kotlin
 dependencies {
-    implementation("top.chiloven:mcsmp4j:0.1.0")
+    implementation("top.chiloven:mcsmp4j:0.1.0-alpha.1")
 }
 ```
 
-This template also publishes to a local staging repository for verification:
+This project is configured for Maven Central publication. To create the local Maven Central staging repository for verification:
 
 ```bash
-./gradlew publishMavenJavaPublicationToLocalStagingRepository
+./gradlew clean stageMavenCentral
 ```
 
-The artifact is written to `build/repos/releases`.
+The unsigned staging artifacts are written to `build/staging-deploy`. Final signing, checksum generation, Maven Central rule validation, and upload are handled by JReleaser during `releaseMavenCentral`.
 
 ## Server configuration
 
@@ -206,8 +206,6 @@ All library runtime failures extend `McsmpException`:
 
 ```bash
 ./gradlew test
-./gradlew javadoc
-./gradlew publishMavenJavaPublicationToLocalStagingRepository
 ```
 
 The test suite includes a minimal in-process mock WebSocket server for JSON-RPC round trips, fragmented responses,

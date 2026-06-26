@@ -1,0 +1,32 @@
+project:
+  name: mcsmp4j
+  description: Java client library for Minecraft Server Management Protocol (MCSMP).
+  longDescription: |
+    mcsmp4j is a Java client library for Minecraft Server Management Protocol (MCSMP),
+    a JSON-RPC 2.0 over WebSocket management API for Minecraft dedicated servers.
+  website: https://github.com/Chiloven945/mcsmp4j
+  authors:
+    - Chiloven945
+  license: Apache-2.0
+  inceptionYear: 2026
+  links:
+    homepage: https://github.com/Chiloven945/mcsmp4j
+  java:
+    groupId: top.chiloven
+    artifactId: mcsmp4j
+    version: 21
+
+signing:
+  pgp:
+    active: ALWAYS
+    armored: true
+
+deploy:
+  maven:
+    mavenCentral:
+      sonatype:
+        active: RELEASE
+        url: https://central.sonatype.com/api/v1/publisher
+        applyMavenCentralRules: true
+        stagingRepositories:
+          - build/staging-deploy
