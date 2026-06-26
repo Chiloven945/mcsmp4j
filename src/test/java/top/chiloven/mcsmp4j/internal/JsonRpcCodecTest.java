@@ -65,6 +65,20 @@ final class JsonRpcCodecTest {
         assertThat(response.error().data().get("method").asString()).isEqualTo("missing");
     }
 
+
+    @Test
+    void decodesEmbeddedResultErrorAsRemoteErrorCompatibilityShape() {
+        var message = codec.decode("""
+                {"jsonrpc":"2.0","id":9,"result":{"error":{"code":-32601,"message":"Method not found","data":{"method":"missing"}}}}
+                """);
+
+        var response = ((JsonRpcCodec.ParsedMessage.Response) message).response();
+        assertThat(response.idKey()).isEqualTo("9");
+        assertThat(response.error()).isNotNull();
+        assertThat(response.error().code()).isEqualTo(-32601);
+        assertThat(response.error().message()).isEqualTo("Method not found");
+    }
+
     @Test
     void decodesNotification() {
         var message = codec.decode("""

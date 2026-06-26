@@ -7,6 +7,7 @@ import top.chiloven.mcsmp4j.protocol.JsonRpcSubscription;
 
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.net.http.WebSocketHandshakeException;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,6 +35,32 @@ public final class JsonRpcTransport implements AutoCloseable {
         this.codec = new JsonRpcCodec(config.objectMapper());
     }
 
+    private static <T> CompletableFuture<T> failedFuture(Throwable error) {
+        CompletableFuture<T> future = new CompletableFuture<>();
+        future.completeExceptionally(error);
+        return future;
+    }
+
+    private static Throwable unwrap(Throwable error) {
+        if (error instanceof CompletionException completionException && completionException.getCause() != null) {
+            return unwrap(completionException.getCause());
+        }
+        if (error instanceof ExecutionException executionException && executionException.getCause() != null) {
+            return unwrap(executionException.getCause());
+        }
+        return error;
+    }
+
+    private static McsmpException connectionFailure(String message, Throwable error) {
+        var unwrapped = unwrap(error);
+        if (unwrapped instanceof WebSocketHandshakeException handshakeException
+                && handshakeException.getResponse().statusCode() == 401) {
+            return new McsmpAuthenticationException(message
+                    + ": server rejected the WebSocket handshake with HTTP 401", handshakeException);
+        }
+        return new McsmpConnectionException(message, unwrapped);
+    }
+
     public CompletableFuture<Void> connect() {
         if (!state.compareAndSet(State.NEW, State.CONNECTING)) {
             return failedFuture(new McsmpConnectionException("MCSMP client is already used"));
@@ -59,28 +86,12 @@ public final class JsonRpcTransport implements AutoCloseable {
                 .handle((socket, error) -> {
                     if (error != null) {
                         state.set(State.FAILED);
-                        throw new McsmpConnectionException("Could not connect to MCSMP endpoint " + config.endpoint(), unwrap(error));
+                        throw connectionFailure("Could not connect to MCSMP endpoint " + config.endpoint(), error);
                     }
                     webSocket = socket;
                     state.set(State.CONNECTED);
                     return null;
                 });
-    }
-
-    private static <T> CompletableFuture<T> failedFuture(Throwable error) {
-        CompletableFuture<T> future = new CompletableFuture<>();
-        future.completeExceptionally(error);
-        return future;
-    }
-
-    private static Throwable unwrap(Throwable error) {
-        if (error instanceof CompletionException completionException && completionException.getCause() != null) {
-            return completionException.getCause();
-        }
-        if (error instanceof ExecutionException executionException && executionException.getCause() != null) {
-            return executionException.getCause();
-        }
-        return error;
     }
 
     public boolean isConnected() {
@@ -121,7 +132,7 @@ public final class JsonRpcTransport implements AutoCloseable {
 
         socket.sendText(payload, true).whenComplete((ignoredSocket, sendError) -> {
             if (sendError != null) {
-                response.completeExceptionally(new McsmpConnectionException("Could not send MCSMP request", unwrap(sendError)));
+                response.completeExceptionally(connectionFailure("Could not send MCSMP request", sendError));
             }
         });
 
@@ -154,7 +165,7 @@ public final class JsonRpcTransport implements AutoCloseable {
                 .handle((ignored, error) -> {
                     state.set(State.CLOSED);
                     if (error != null) {
-                        throw new McsmpConnectionException("Could not close MCSMP WebSocket", unwrap(error));
+                        throw connectionFailure("Could not close MCSMP WebSocket", error);
                     }
                     return null;
                 });

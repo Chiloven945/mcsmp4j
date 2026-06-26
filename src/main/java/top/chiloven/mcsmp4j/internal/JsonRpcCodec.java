@@ -97,6 +97,12 @@ final class JsonRpcCodec {
         if (result == null) {
             result = NullNode.getInstance();
         }
+
+        var embeddedError = embeddedError(result);
+        if (embeddedError != null) {
+            return JsonRpcResponseMessage.error(idKey, embeddedError);
+        }
+
         return JsonRpcResponseMessage.result(idKey, result);
     }
 
@@ -119,6 +125,36 @@ final class JsonRpcCodec {
             throw new McsmpProtocolException("JSON-RPC error missing required property: " + property);
         }
         return value;
+    }
+
+    /**
+     * Some development snapshots and proxy layers have been observed to wrap a JSON-RPC-like error inside
+     * {@code result}. Treat that shape as an error so callers do not accidentally deserialize a failure payload as an
+     * application model.
+     */
+    private static @Nullable JsonRpcError embeddedError(JsonNode result) {
+        if (!result.isObject()) {
+            return null;
+        }
+
+        var errorNode = result.get("error");
+        if (errorNode != null && errorNode.isObject()) {
+            var code = errorNode.get("code");
+            var message = errorNode.get("message");
+            if (code != null && code.isIntegralNumber() && message != null && message.isString()) {
+                return new JsonRpcError(code.asInt(), message.asString(), errorNode.get("data"));
+            }
+        }
+
+        var code = result.get("code");
+        var message = result.get("message");
+        if (code != null && code.isIntegralNumber()
+                && message != null && message.isString()
+                && (result.has("error") || result.has("data"))) {
+            return new JsonRpcError(code.asInt(), message.asString(), result.get("data"));
+        }
+
+        return null;
     }
 
     sealed interface ParsedMessage permits ParsedMessage.Response, ParsedMessage.Notification {

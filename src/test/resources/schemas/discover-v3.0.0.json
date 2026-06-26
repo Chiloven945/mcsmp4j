@@ -1,0 +1,10 @@
+{
+  "protocolVersion": "3.0.0",
+  "methods": [
+    "rpc.discover",
+    "minecraft:server/status"
+  ],
+  "notifications": [
+    "minecraft:notification/server/status"
+  ]
+}

@@ -1,9 +1,12 @@
 plugins {
     `java-library`
+    `maven-publish`
 }
 
 group = "top.chiloven"
 version = "0.1.0-SNAPSHOT"
+
+description = "Java client library for Minecraft Server Management Protocol (MCSMP)."
 
 java {
     toolchain {
@@ -29,6 +32,55 @@ tasks.withType<JavaCompile>().configureEach {
     options.release.set(21)
 }
 
+tasks.withType<Javadoc>().configureEach {
+    options.encoding = "UTF-8"
+    (options as StandardJavadocDocletOptions).apply {
+        addStringOption("Xdoclint:all,-missing", "-quiet")
+        links("https://docs.oracle.com/en/java/javase/21/docs/api/")
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+
+            pom {
+                name.set("mcsmp4j")
+                description.set(project.description)
+                url.set("https://github.com/Chiloven945/mcsmp4j")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/license/mit")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("chiloven945")
+                        name.set("Chiloven945")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:https://github.com/Chiloven945/mcsmp4j.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/Chiloven945/mcsmp4j.git")
+                    url.set("https://github.com/Chiloven945/mcsmp4j")
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "localStaging"
+            url = layout.buildDirectory.dir("repos/releases").get().asFile.toURI()
+        }
+    }
 }

@@ -1,0 +1,10 @@
+{
+  "protocolVersion": "2.0.0",
+  "methods": [
+    "minecraft:gamerules",
+    "minecraft:gamerules/update"
+  ],
+  "notifications": [
+    "minecraft:notification/gamerules/updated"
+  ]
+}

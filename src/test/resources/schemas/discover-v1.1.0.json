@@ -1,0 +1,12 @@
+{
+  "protocolVersion": "1.1.0",
+  "methods": [
+    "minecraft:server/status",
+    "minecraft:players",
+    "minecraft:allowlist/add"
+  ],
+  "notifications": [
+    "minecraft:notification/server/activity",
+    "minecraft:notification/players/joined"
+  ]
+}

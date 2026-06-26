@@ -36,4 +36,13 @@ final class McsmpClientConfigTest {
                 .hasMessageContaining("secret");
     }
 
+    @Test
+    void compatibleVersionPolicyEnablesLegacyNotificationAlias() {
+        var config = McsmpClientConfig.builder()
+                .endpoint(URI.create("ws://localhost:25585"))
+                .build();
+
+        assertThat(config.legacyNotificationPrefix()).isTrue();
+    }
+
 }
