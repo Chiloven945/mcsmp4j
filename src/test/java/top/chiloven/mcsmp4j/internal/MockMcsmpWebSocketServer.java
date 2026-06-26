@@ -1,27 +1,20 @@
 package top.chiloven.mcsmp4j.internal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 final class MockMcsmpWebSocketServer implements Closeable {
@@ -38,12 +31,71 @@ final class MockMcsmpWebSocketServer implements Closeable {
         this.executor.execute(() -> accept(handler));
     }
 
-    static MockMcsmpWebSocketServer start(Handler handler) throws IOException {
-        return new MockMcsmpWebSocketServer(handler);
+    private void accept(Handler handler) {
+        try (
+                var socket = serverSocket.accept();
+                var session = Session.create(socket)
+        ) {
+            handshake.complete(session.handshake());
+            handler.handle(session);
+            done.complete(null);
+        } catch (Throwable error) {
+            handshake.completeExceptionally(error);
+            done.completeExceptionally(error);
+        }
     }
 
     static MockMcsmpWebSocketServer rejecting(int statusCode, String reason) throws IOException {
         return start(session -> session.reject(statusCode, reason));
+    }
+
+    static MockMcsmpWebSocketServer start(Handler handler) throws IOException {
+        return new MockMcsmpWebSocketServer(handler);
+    }
+
+    private static Handshake readHandshake(InputStream input) throws IOException {
+        var buffer = new ByteArrayOutputStream();
+        int previous3 = -1, previous2 = -1, previous1 = -1;
+        while (true) {
+            int current = input.read();
+            if (current < 0) {
+                throw new EOFException("HTTP upgrade request ended early");
+            }
+            buffer.write(current);
+            if (previous3 == '\r' && previous2 == '\n' && previous1 == '\r' && current == '\n') {
+                break;
+            }
+            previous3 = previous2;
+            previous2 = previous1;
+            previous1 = current;
+        }
+
+        var raw = buffer.toString(StandardCharsets.ISO_8859_1);
+        var lines = raw.split("\\r\\n");
+        var requestLine = lines[0];
+        var headers = new LinkedHashMap<String, String>();
+        Arrays.stream(lines, 1, lines.length)
+                .filter(line -> !line.isEmpty())
+                .forEach(line -> {
+                    int colon = line.indexOf(':');
+                    if (colon > 0) {
+                        headers.put(
+                                line.substring(0, colon).toLowerCase(Locale.ROOT),
+                                line.substring(colon + 1).trim()
+                        );
+                    }
+                });
+        return new Handshake(requestLine, Map.copyOf(headers));
+    }
+
+    private static String acceptKey(String key) {
+        try {
+            var digest = MessageDigest.getInstance("SHA-1")
+                    .digest((key + WEBSOCKET_GUID).getBytes(StandardCharsets.ISO_8859_1));
+            return Base64.getEncoder().encodeToString(digest);
+        } catch (NoSuchAlgorithmException e) {
+            throw new AssertionError(e);
+        }
     }
 
     URI uri() {
@@ -56,17 +108,6 @@ final class MockMcsmpWebSocketServer implements Closeable {
 
     void awaitDone() {
         done.orTimeout(5, TimeUnit.SECONDS).join();
-    }
-
-    private void accept(Handler handler) {
-        try (var socket = serverSocket.accept(); var session = Session.create(socket)) {
-            handshake.complete(session.handshake());
-            handler.handle(session);
-            done.complete(null);
-        } catch (Throwable error) {
-            handshake.completeExceptionally(error);
-            done.completeExceptionally(error);
-        }
     }
 
     @Override
@@ -101,7 +142,10 @@ final class MockMcsmpWebSocketServer implements Closeable {
         private final Handshake handshake;
         private boolean accepted;
 
-        private Session(Socket socket, Handshake handshake) throws IOException {
+        private Session(
+                Socket socket,
+                Handshake handshake
+        ) throws IOException {
             this.socket = socket;
             this.input = socket.getInputStream();
             this.output = socket.getOutputStream();
@@ -128,6 +172,11 @@ final class MockMcsmpWebSocketServer implements Closeable {
             accepted = true;
         }
 
+        private void writeAscii(String value) throws IOException {
+            output.write(value.getBytes(StandardCharsets.ISO_8859_1));
+            output.flush();
+        }
+
         void reject(int statusCode, String reason) throws IOException {
             writeAscii("HTTP/1.1 " + statusCode + " " + reason + "\r\n"
                     + "Connection: close\r\n"
@@ -143,23 +192,6 @@ final class MockMcsmpWebSocketServer implements Closeable {
             }
             assertThat(frame.opcode).as("text frame opcode").isEqualTo(1);
             return new String(frame.payload, StandardCharsets.UTF_8);
-        }
-
-        void sendText(String text) throws IOException {
-            ensureAccepted();
-            sendFrame(true, 1, text.getBytes(StandardCharsets.UTF_8));
-        }
-
-        void sendTextFragments(String first, String second) throws IOException {
-            ensureAccepted();
-            sendFrame(false, 1, first.getBytes(StandardCharsets.UTF_8));
-            sendFrame(true, 0, second.getBytes(StandardCharsets.UTF_8));
-        }
-
-        void sendClose() throws IOException {
-            if (accepted) {
-                sendFrame(true, 8, new byte[0]);
-            }
         }
 
         private void ensureAccepted() {
@@ -195,9 +227,10 @@ final class MockMcsmpWebSocketServer implements Closeable {
                 throw new EOFException("truncated WebSocket frame payload");
             }
             if (masked) {
-                for (int i = 0; i < payload.length; i++) {
-                    payload[i] = (byte) (payload[i] ^ mask[i % 4]);
-                }
+                IntStream.range(0, payload.length)
+                        .forEach(i ->
+                                payload[i] = (byte) (payload[i] ^ mask[i % 4])
+                        );
             }
             return new Frame(opcode, payload);
         }
@@ -208,8 +241,17 @@ final class MockMcsmpWebSocketServer implements Closeable {
             return value & 0xFF;
         }
 
-        private void sendFrame(boolean fin, int opcode, byte[] payload) throws IOException {
-            Objects.requireNonNull(payload, "payload");
+        void sendText(String text) throws IOException {
+            ensureAccepted();
+            sendFrame(true, 1, text.getBytes(StandardCharsets.UTF_8));
+        }
+
+        private void sendFrame(
+                boolean fin,
+                int opcode,
+                byte[] payload
+        ) throws IOException {
+            requireNonNull(payload, "payload");
             output.write((fin ? 0x80 : 0x00) | opcode);
             if (payload.length < 126) {
                 output.write(payload.length);
@@ -228,9 +270,16 @@ final class MockMcsmpWebSocketServer implements Closeable {
             output.flush();
         }
 
-        private void writeAscii(String value) throws IOException {
-            output.write(value.getBytes(StandardCharsets.ISO_8859_1));
-            output.flush();
+        void sendTextFragments(String first, String second) throws IOException {
+            ensureAccepted();
+            sendFrame(false, 1, first.getBytes(StandardCharsets.UTF_8));
+            sendFrame(true, 0, second.getBytes(StandardCharsets.UTF_8));
+        }
+
+        void sendClose() throws IOException {
+            if (accepted) {
+                sendFrame(true, 8, new byte[0]);
+            }
         }
 
         @Override
@@ -240,50 +289,11 @@ final class MockMcsmpWebSocketServer implements Closeable {
 
     }
 
-    private record Frame(int opcode, byte[] payload) {
+    private record Frame(
+            int opcode,
+            byte[] payload
+    ) {
 
-    }
-
-    private static Handshake readHandshake(InputStream input) throws IOException {
-        var buffer = new ByteArrayOutputStream();
-        int previous3 = -1, previous2 = -1, previous1 = -1;
-        while (true) {
-            int current = input.read();
-            if (current < 0) {
-                throw new EOFException("HTTP upgrade request ended early");
-            }
-            buffer.write(current);
-            if (previous3 == '\r' && previous2 == '\n' && previous1 == '\r' && current == '\n') {
-                break;
-            }
-            previous3 = previous2;
-            previous2 = previous1;
-            previous1 = current;
-        }
-
-        var raw = buffer.toString(StandardCharsets.ISO_8859_1);
-        var lines = raw.split("\\r\\n");
-        var requestLine = lines[0];
-        var headers = new LinkedHashMap<String, String>();
-        for (int i = 1; i < lines.length; i++) {
-            var line = lines[i];
-            if (line.isEmpty()) continue;
-            int colon = line.indexOf(':');
-            if (colon > 0) {
-                headers.put(line.substring(0, colon).toLowerCase(Locale.ROOT), line.substring(colon + 1).trim());
-            }
-        }
-        return new Handshake(requestLine, Map.copyOf(headers));
-    }
-
-    private static String acceptKey(String key) {
-        try {
-            var digest = MessageDigest.getInstance("SHA-1")
-                    .digest((key + WEBSOCKET_GUID).getBytes(StandardCharsets.ISO_8859_1));
-            return Base64.getEncoder().encodeToString(digest);
-        } catch (NoSuchAlgorithmException e) {
-            throw new AssertionError(e);
-        }
     }
 
 }

@@ -24,23 +24,20 @@ final class McsmpClientConfigTest {
 
     @Test
     void rejectsUnsupportedEndpointScheme() {
-        assertThatThrownBy(() -> McsmpClientConfig.builder().endpoint(URI.create("http://localhost:25585")))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> McsmpClientConfig.builder()
+                .endpoint(URI.create("http://localhost:25585"))).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("ws or wss");
     }
 
     @Test
     void rejectsBlankBearerSecret() {
-        assertThatThrownBy(() -> McsmpAuth.bearer("   "))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> McsmpAuth.bearer("   ")).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("secret");
     }
 
     @Test
     void compatibleVersionPolicyEnablesLegacyNotificationAlias() {
-        var config = McsmpClientConfig.builder()
-                .endpoint(URI.create("ws://localhost:25585"))
-                .build();
+        var config = McsmpClientConfig.builder().endpoint(URI.create("ws://localhost:25585")).build();
 
         assertThat(config.legacyNotificationPrefix()).isTrue();
     }
