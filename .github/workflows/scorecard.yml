@@ -1,7 +1,6 @@
 name: Scorecard
 
 on:
-  branch_protection_rule:
   push:
     branches:
       - main
@@ -12,8 +11,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
-  id-token: write
 
 concurrency:
   group: scorecard-${{ github.ref }}
