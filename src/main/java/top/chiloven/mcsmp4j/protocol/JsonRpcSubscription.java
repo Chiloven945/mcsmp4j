@@ -1,10 +1,10 @@
 package top.chiloven.mcsmp4j.protocol;
 
 /**
- * Handle returned when registering a raw JSON-RPC notification listener.
+ * Handle returned by a raw JSON-RPC notification registration.
  *
- * <p>Closing the subscription unregisters the listener and allows it to be garbage-collected. Subscriptions are
- * intended to be used with try-with-resources or stored alongside the component that owns the listener.</p>
+ * <p>Closing the subscription unregisters the associated listener. The operation is idempotent; callers may close a
+ * subscription from cleanup code even if it may already have been closed because the client itself is closing.</p>
  */
 @FunctionalInterface
 public interface JsonRpcSubscription extends AutoCloseable {

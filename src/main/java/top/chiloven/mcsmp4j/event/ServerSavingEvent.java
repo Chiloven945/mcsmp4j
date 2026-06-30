@@ -1,10 +1,11 @@
 package top.chiloven.mcsmp4j.event;
 
 /**
- * Server save started notification.
+ * Event emitted when a server save operation starts.
  *
- * <p>This event is decoded from the {@code minecraft:notification/server/saving} notification. This event indicates
- * that the server has started saving state.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  */
 public record ServerSavingEvent() implements McsmpEvent {
 

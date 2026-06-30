@@ -1,13 +1,13 @@
 package top.chiloven.mcsmp4j.event;
 
 /**
- * World upgrade progress changed.
+ * Progress event for a running world upgrade.
  *
- * <p>This event is decoded from the upcoming {@code minecraft:notification/world/upgrade_progress} notification.
- * The protocol reports progress as a number between {@code 0.0} and {@code 1.0}, inclusive.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  *
- * @param progress fractional progress of the world upgrade, where {@code 0.0} means not started and {@code 1.0} means
- *                 complete
+ * @param progress progress as a number from {@code 0.0} to {@code 1.0}
  */
 public record WorldUpgradeProgressEvent(
         double progress

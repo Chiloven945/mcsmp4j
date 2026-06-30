@@ -1,12 +1,18 @@
 package top.chiloven.mcsmp4j;
 
 /**
- * Raised when the peer sends data that cannot be interpreted as valid MCSMP JSON-RPC traffic.
+ * Exception raised when received data violates the JSON-RPC or MCSMP shape expected by the client.
  *
- * <p>Examples include invalid JSON, a response with an unknown request id, a response that is missing both
- * {@code result} and {@code error}, or notification parameters that cannot be decoded into the expected event model. A
- * protocol exception usually indicates a server bug, a version mismatch, a custom namespace returning an unexpected
- * shape, or a malformed mock server in tests.</p>
+ * <p>This exception indicates that the WebSocket connection delivered a message but the message could not be
+ * interpreted
+ * as a valid response, error, or notification. Causes include malformed JSON, missing required JSON-RPC fields,
+ * response ids that do not match pending requests, or payload structures that cannot be deserialized into the requested
+ * model type.</p>
+ *
+ * <p>Protocol exceptions are useful bug reports for server implementations, proxy layers, or library compatibility with
+ * a
+ * new protocol revision. They are different from {@link McsmpRemoteException}, which means the server deliberately sent
+ * a valid JSON-RPC error object.</p>
  */
 public final class McsmpProtocolException extends McsmpException {
 

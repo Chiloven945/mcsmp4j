@@ -9,14 +9,27 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Display message supporting either a literal string or a translation key with parameters.
+ * Localized or literal text payload used by system messages and kick messages.
  *
- * <p>The protocol message schema can represent localized messages by translation key or simple literal text.
- * Literal messages are easiest for most administration tools. Translation messages are useful when a client wants the
- * Minecraft client to localize a known translation key.</p>
+ * <p>MCSMP messages can be plain literal text or translation-key based messages. Literal messages are easiest for
+ * management tools that already have final text. Translatable messages are useful when a tool wants Minecraft clients
+ * to resolve a translation key using the player's language resources.</p>
+ *
+ * <h2>Literal messages</h2>
+ *
+ * <p>{@link #literal(String)} creates a message that serializes with literal text. Use it for operator-entered chat,
+ * maintenance notices, and simple disconnect reasons.</p>
+ *
+ * <h2>Translatable messages</h2>
+ *
+ * <p>{@link #translatable(String, String...)} creates a message with a translation key and string parameters. The key
+ * and
+ * parameters are transported to the server; the client or server-side presentation layer determines how localization is
+ * performed. Use stable Minecraft translation keys only when you know the target server/client versions support
+ * them.</p>
  *
  * @param translatable       optional translation key
- * @param translatableParams parameters substituted into the translation key
+ * @param translatableParams ordered parameters for the translation key
  * @param literal            optional literal text
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

@@ -10,11 +10,22 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Strongly typed client for the {@code minecraft:players} method group.
+ * Type-safe client for the {@code minecraft:players} method group.
  *
- * <p>This API provides a snapshot of currently connected players and can request that players be kicked. Kicking
- * returns the list of players the server actually kicked, which may be smaller than the requested list if some
- * selectors did not match currently connected players.</p>
+ * <p>This API reads the current online player snapshot and requests that the server kick players. It operates on
+ * {@link top.chiloven.mcsmp4j.model.Player} selectors rather than maintaining a persistent session object for each
+ * player. Returned lists are snapshots, not live collections.</p>
+ *
+ * <h2>Protocol mapping</h2>
+ *
+ * <ul>
+ *     <li>{@link #list()} maps to {@code minecraft:players}</li>
+ *     <li>{@link #kick(java.util.Collection)} maps to {@code minecraft:players/kick}</li>
+ * </ul>
+ *
+ * <p>Kick requests use {@link top.chiloven.mcsmp4j.model.KickPlayer}, allowing an optional message to be sent to the
+ * player. A successful result contains the players the server reports as kicked; it may be empty if the selectors did not
+ * match any currently connected players.</p>
  */
 public interface PlayersApi {
 

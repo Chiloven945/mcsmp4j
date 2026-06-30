@@ -1,10 +1,11 @@
 package top.chiloven.mcsmp4j.event;
 
 /**
- * World upgrade finished notification.
+ * Event emitted when a world upgrade finishes successfully.
  *
- * <p>This event is decoded from the {@code minecraft:notification/world/upgrade_finished} notification. This upcoming
- * notification is emitted by servers that advertise world-upgrade notifications.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  */
 public record WorldUpgradeFinishedEvent() implements McsmpEvent {
 

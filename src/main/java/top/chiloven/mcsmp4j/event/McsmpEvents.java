@@ -3,11 +3,25 @@ package top.chiloven.mcsmp4j.event;
 import java.util.function.Consumer;
 
 /**
- * Type-safe MCSMP notification listener registry.
+ * Registry for typed and raw MCSMP notification listeners.
  *
- * <p>Instances are obtained from {@link top.chiloven.mcsmp4j.McsmpClient#events()}. Listeners are invoked by the
- * client's WebSocket receive path whenever the server sends a JSON-RPC notification. Listener callbacks should return
- * quickly and offload expensive work to an application executor if necessary.</p>
+ * <p>Instances are obtained from {@link top.chiloven.mcsmp4j.McsmpClient#events()}. The registry converts raw JSON-RPC
+ * notifications into typed {@link McsmpEvent} records when the notification is known, and it also exposes raw events
+ * for unknown methods or extension namespaces.</p>
+ *
+ * <h2>Listener registration</h2>
+ *
+ * <p>{@link #on(Class, java.util.function.Consumer)} registers a listener for one event class or any subclass
+ * assignable
+ * to that class. {@link #onRaw(java.util.function.Consumer)} receives all raw events.
+ * {@link #onRaw(String, java.util.function.Consumer)} receives only one exact method name.</p>
+ *
+ * <h2>Callback behavior</h2>
+ *
+ * <p>Callbacks are invoked from the client's receive path. Keep listeners fast, avoid blocking calls, and dispatch to
+ * an
+ * application executor for expensive work. Closing the returned {@link EventSubscription} unregisters the
+ * listener.</p>
  */
 public interface McsmpEvents {
 

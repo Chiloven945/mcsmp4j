@@ -8,8 +8,9 @@ import java.util.Arrays;
 /**
  * Declared value type of a Minecraft game rule.
  *
- * <p>Modern MCSMP schemas expose game rules as either integer-valued or boolean-valued. The type is returned by
- * {@link TypedGameRule#type()} when listing or updating game rules.</p>
+ * <p>Modern MCSMP exposes game rules as either integer-valued or boolean-valued. The type returned by
+ * {@link TypedGameRule#type()} is the best source for building editors, validating operator input, and deciding whether
+ * to call {@link UntypedGameRule#integer(String, int)} or {@link UntypedGameRule#bool(String, boolean)}.</p>
  */
 public enum GameRuleType {
 

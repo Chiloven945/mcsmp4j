@@ -6,11 +6,15 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 /**
- * Minecraft server difficulty values used by MCSMP server-settings methods.
+ * Minecraft server difficulty values used by server settings.
  *
- * <p>The JSON representation is the lowercase protocol value used by Minecraft, for example {@code "normal"}.
- * Use {@link top.chiloven.mcsmp4j.api.ServerSettingsApi#difficulty()} to read the current value and
- * {@link top.chiloven.mcsmp4j.api.ServerSettingsApi#setDifficulty(Difficulty)} to update it.</p>
+ * <p>The enum constants serialize to the lowercase protocol strings expected by MCSMP: {@code peaceful}, {@code easy},
+ * {@code normal}, and {@code hard}. Use {@link top.chiloven.mcsmp4j.api.ServerSettingsApi#difficulty()} to read the
+ * current server difficulty and {@link top.chiloven.mcsmp4j.api.ServerSettingsApi#setDifficulty(Difficulty)} to request
+ * a change.</p>
+ *
+ * <p>Changing difficulty can have immediate gameplay effects. Management applications should surface this operation as
+ * a server setting change, not as a cosmetic preference.</p>
  */
 public enum Difficulty {
 

@@ -5,17 +5,27 @@ import java.net.http.WebSocket;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Describes how a client authenticates during the MCSMP WebSocket opening handshake.
+ * Authentication strategy applied during the WebSocket opening handshake.
  *
- * <p>Minecraft dedicated servers protect the management endpoint with a server-specific secret. The
- * protocol allows clients to present that secret either as an HTTP bearer token or as part of the
- * {@code Sec-WebSocket-Protocol} header. This sealed interface captures those supported handshake strategies while
- * keeping the transport implementation independent from the calling code.</p>
+ * <p>MCSMP authenticates clients with the server-specific management secret configured by the server operator. This
+ * sealed interface models the supported ways to send that secret. The strategy is part of {@link McsmpClientConfig}; it
+ * is used only during the opening handshake and is not sent again with each JSON-RPC request.</p>
  *
- * <p>Most Java applications should use {@link #bearer(String)} because it maps directly to the
- * {@code Authorization: Bearer <secret>} header. Browser-like clients, or applications that need to mimic the
- * JavaScript WebSocket constructor behavior, can use {@link #websocketSubprotocol(String)}. {@link #none()} is intended
- * for tests and for older experimental server snapshots that did not yet require authentication.</p>
+ * <h2>Bearer authentication</h2>
+ *
+ * <p>{@link #bearer(String)} sends the secret as an HTTP {@code Authorization: Bearer ...} header. This is the most
+ * common choice for normal Java applications, command-line tools, daemons, and desktop applications.</p>
+ *
+ * <h2>WebSocket subprotocol authentication</h2>
+ *
+ * <p>{@link #websocketSubprotocol(String)} sends the secret using the {@code Sec-WebSocket-Protocol} header together
+ * with the {@code minecraft-v1} subprotocol marker. This exists to match browser-style WebSocket construction rules and
+ * may be useful for compatibility testing.</p>
+ *
+ * <h2>No authentication</h2>
+ *
+ * <p>{@link #none()} is intended only for mock servers, tests, or very old experimental endpoints. Production
+ * Minecraft management servers should be configured with a secret and should reject unauthenticated clients.</p>
  */
 public sealed interface McsmpAuth permits
         McsmpAuth.Bearer,

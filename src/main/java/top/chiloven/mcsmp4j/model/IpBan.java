@@ -8,12 +8,21 @@ import java.time.Instant;
 import static java.util.Objects.requireNonNull;
 
 /**
- * IP ban entry accepted and returned by the MCSMP IP ban list endpoints.
+ * IP-ban entry returned by the {@code minecraft:ip_bans} API.
  *
- * @param ip      the banned IP address
- * @param reason  optional human-readable ban reason
- * @param source  optional source or actor that created the ban
- * @param expires optional expiration instant; {@code null} means permanent
+ * <p>An IP ban targets a network address string and may carry metadata describing why it exists, who created it, when
+ * it
+ * was created, and when it expires. This is the server's authoritative stored shape after adding, setting, or listing
+ * IP bans. Use {@link IncomingIpBan} for new add requests when the protocol accepts the narrower incoming shape.</p>
+ *
+ * <p>IP addresses can be sensitive operational data. Avoid logging or exposing them to untrusted users unless your
+ * server
+ * policy permits it.</p>
+ *
+ * @param ip      the banned IP address string
+ * @param reason  optional reason supplied by the operator or server
+ * @param source  optional source/actor that created the ban
+ * @param expires optional expiration instant; {@code null} means permanent or unspecified
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record IpBan(

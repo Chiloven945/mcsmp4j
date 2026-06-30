@@ -13,15 +13,20 @@ import java.util.TreeSet;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Capability summary inferred from {@code rpc.discover}.
+ * Immutable snapshot of methods, notifications, protocol version, and named features advertised by a server.
  *
- * <p>This class is the main runtime view of what the connected server claims to support. It contains the optional
- * protocol version, discovered method and notification names, inferred feature flags, and the raw discovery schema.
- * Applications can use it to avoid calling methods that a server does not support, to decide whether to register newer
- * notification listeners, or to present protocol diagnostics.</p>
+ * <p>{@code McsmpCapabilities} is produced by {@link McsmpDiscovery#discover()} and cached by
+ * {@link top.chiloven.mcsmp4j.McsmpClient#discover()}. It answers two kinds of questions:</p>
  *
- * <p>Instances are immutable snapshots. Calling {@link top.chiloven.mcsmp4j.McsmpClient#discover()} again creates
- * a new snapshot and replaces the client's cached capabilities.</p>
+ * <ul>
+ *     <li>Does the server advertise a specific JSON-RPC method or notification name?</li>
+ *     <li>Does the advertised surface imply a higher-level protocol-history feature such as typed game-rule values?</li>
+ * </ul>
+ *
+ * <p>Prefer feature checks for application decisions and raw method/notification checks for diagnostics or extension
+ * support. A custom server may expose methods in combinations that do not match any historical vanilla release, so a
+ * feature should be understood as "this behavior appears supported" rather than as a guarantee of every detail of a
+ * Minecraft release.</p>
  */
 public final class McsmpCapabilities {
 

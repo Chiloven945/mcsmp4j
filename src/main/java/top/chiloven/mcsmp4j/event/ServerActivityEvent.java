@@ -1,10 +1,11 @@
 package top.chiloven.mcsmp4j.event;
 
 /**
- * Network connection initialized activity notification.
+ * Event emitted when the server reports network-management activity or connection initialization.
  *
- * <p>This event is decoded from the {@code minecraft:notification/server/activity} notification. This event is
- * available only on protocol versions that include the server activity notification.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  */
 public record ServerActivityEvent() implements McsmpEvent {
 

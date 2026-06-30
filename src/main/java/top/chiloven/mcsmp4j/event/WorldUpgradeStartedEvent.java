@@ -1,10 +1,11 @@
 package top.chiloven.mcsmp4j.event;
 
 /**
- * World upgrade started notification.
+ * Event emitted when a world upgrade starts on servers that support world-upgrade notifications.
  *
- * <p>This event is decoded from the {@code minecraft:notification/world/upgrade_started} notification. This upcoming
- * notification is emitted by servers that advertise world-upgrade notifications.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  */
 public record WorldUpgradeStartedEvent() implements McsmpEvent {
 

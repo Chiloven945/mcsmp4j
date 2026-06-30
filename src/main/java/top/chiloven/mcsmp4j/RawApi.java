@@ -6,15 +6,32 @@ import tools.jackson.databind.JsonNode;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Low-level JSON-RPC caller for official and custom MCSMP namespaces.
+ * Low-level JSON-RPC caller for advanced MCSMP usage.
  *
- * <p>The typed API groups in {@code top.chiloven.mcsmp4j.api} cover the official Minecraft namespace. This
- * interface remains available for advanced users who need to call newly introduced protocol methods before the library
- * adds typed wrappers, or methods exposed by modded servers under custom namespaces.</p>
+ * <p>{@code RawApi} is the escape hatch beneath the typed official APIs. It lets applications call any JSON-RPC method
+ * by
+ * name and choose the Java result type. This is essential for custom namespaces, modded servers, diagnostics, and newly
+ * introduced protocol methods that are not yet represented by a dedicated mcsmp4j interface.</p>
  *
- * <p>Each call sends a JSON-RPC request over the active WebSocket connection. Method names must already be in
- * their full protocol form, for example {@code minecraft:server/status} or {@code my_mod:admin/reload}. Parameters are
- * encoded as the JSON-RPC {@code params} array in the order provided.</p>
+ * <h2>Parameter shape</h2>
+ *
+ * <p>The {@code params} varargs correspond to the JSON-RPC positional parameter array. Passing no parameters omits or
+ * sends an empty parameter list depending on the transport implementation. Passing one Java collection creates one
+ * positional parameter whose JSON value is an array; this matches official methods such as
+ * {@code minecraft:allowlist/add}, which accept a single array parameter containing players.</p>
+ *
+ * <h2>Type conversion</h2>
+ *
+ * <p>{@link #call(String, Class, Object...)} is convenient for simple result types. Use
+ * {@link #call(String, tools.jackson.core.type.TypeReference, Object...)} for parameterized results such as
+ * {@code List<Player>} or map-like extension payloads. {@link #callJson(String, Object...)} returns a raw Jackson tree
+ * and is the best choice while inspecting unknown or unstable extension methods.</p>
+ *
+ * <h2>Error semantics</h2>
+ *
+ * <p>The returned future completes exceptionally with {@link McsmpRemoteException} if the remote endpoint returns a
+ * JSON-RPC error object, with {@link McsmpTimeoutException} if no matching response arrives before the configured
+ * request timeout, and with a transport/protocol exception for malformed responses or closed connections.</p>
  */
 public interface RawApi {
 

@@ -9,11 +9,27 @@ import java.util.UUID;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Player specifier accepted by MCSMP requests and returned by server responses.
+ * Player selector and player identity value used throughout MCSMP.
  *
- * <p>A player may be identified by UUID, by name, or by both. Request payloads often accept partial players so
- * clients can address a player by the information they have available. Response payloads commonly include both fields.
- * This record enforces that at least one of {@code id} or {@code name} is present.</p>
+ * <p>A player can be represented by UUID, by current name, or by both. The same record is used in request payloads and
+ * in
+ * server responses. Request payloads often accept partial selectors because a management tool may know only the visible
+ * name typed by an operator or only the UUID stored in a database. Response payloads commonly contain both fields after
+ * the server has resolved the player identity.</p>
+ *
+ * <h2>Validation</h2>
+ *
+ * <p>The constructor requires at least one identifier. A value with neither UUID nor usable name would serialize to an
+ * ambiguous JSON object and cannot identify a player. Blank names are rejected when no UUID is present. Prefer
+ * {@link #byId(java.util.UUID)}, {@link #byName(String)}, or {@link #of(java.util.UUID, String)} in application code so
+ * intent is clear.</p>
+ *
+ * <h2>Equality and storage</h2>
+ *
+ * <p>Because this is a Java record, equality compares both components. Two selectors that refer to the same human
+ * player
+ * but use different fields, such as {@code Player.byName("Alex")} and {@code Player.byId(uuid)}, are not equal until
+ * the same fields are present. Use UUID-based keys in persistent storage when the server provides UUIDs.</p>
  *
  * @param id   the player's UUID, or {@code null} when only a name is available
  * @param name the player's current or requested name, or {@code null} when only a UUID is available

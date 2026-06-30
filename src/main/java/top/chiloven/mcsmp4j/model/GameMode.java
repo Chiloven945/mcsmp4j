@@ -6,10 +6,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 /**
- * Minecraft game mode values used by MCSMP server-settings methods.
+ * Minecraft game-mode values used by server settings.
  *
- * <p>The JSON representation is the lowercase protocol value, for example {@code "survival"}. These values are
- * used for the server's default game mode and for force-game-mode related settings.</p>
+ * <p>The enum constants serialize to lowercase protocol strings: {@code survival}, {@code creative},
+ * {@code adventure}, and {@code spectator}. They are used when reading or setting the server's default game mode. The
+ * related {@code force_game_mode} setting controls whether players are forced into that default when joining.</p>
  */
 public enum GameMode {
 

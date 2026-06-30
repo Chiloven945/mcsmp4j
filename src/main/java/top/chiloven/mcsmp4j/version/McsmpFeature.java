@@ -1,12 +1,15 @@
 package top.chiloven.mcsmp4j.version;
 
 /**
- * Feature flags inferred from {@code rpc.discover} and the known MCSMP protocol history.
+ * Named feature gates derived from MCSMP protocol history and discovery output.
  *
- * <p>Features provide a stable Java-level vocabulary for optional protocol behavior. Use
- * {@link top.chiloven.mcsmp4j.discovery.McsmpCapabilities#supports(McsmpFeature)} or
- * {@link top.chiloven.mcsmp4j.discovery.McsmpCapabilities#require(McsmpFeature)} before depending on behavior that is
- * not present in every protocol version.</p>
+ * <p>A feature is a semantic capability rather than a raw method name. For example, {@link #TYPED_GAMERULE_VALUE}
+ * represents the protocol change where game-rule values became JSON booleans/integers instead of strings; it may be
+ * inferred from protocol version, schema shape, or discovered methods depending on server output.</p>
+ *
+ * <p>Use features when writing code that must explain why an operation is unavailable. For exact protocol
+ * introspection, use {@link top.chiloven.mcsmp4j.discovery.McsmpCapabilities#supportsMethod(String)} and
+ * {@link top.chiloven.mcsmp4j.discovery.McsmpCapabilities#supportsNotification(String)}.</p>
  */
 public enum McsmpFeature {
 

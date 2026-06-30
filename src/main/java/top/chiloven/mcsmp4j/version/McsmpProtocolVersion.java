@@ -5,15 +5,16 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * Semantic version of the MCSMP protocol when advertised by {@code rpc.discover}.
+ * Semantic version value for the MCSMP protocol surface.
  *
- * <p>The protocol version is separate from the Minecraft game version. It identifies management API changes such
- * as new notifications, changed schemas, and discovery behavior. This record stores the numeric
- * {@code major.minor.patch} components and implements natural ordering.</p>
+ * <p>The protocol has a version history independent from this Java library's artifact version. A Minecraft server may
+ * advertise a protocol version through discovery or expose enough methods and notifications for mcsmp4j to infer a
+ * likely version. This record models the conventional {@code major.minor.patch} shape and provides comparison helpers
+ * for feature checks and diagnostics.</p>
  *
- * @param major the major version component
- * @param minor the minor version component
- * @param patch the patch version component
+ * @param major the major protocol version, increased for breaking changes
+ * @param minor the minor protocol version, increased for compatible additions
+ * @param patch the patch protocol version, increased for bug-fix-level changes
  */
 public record McsmpProtocolVersion(
         int major,

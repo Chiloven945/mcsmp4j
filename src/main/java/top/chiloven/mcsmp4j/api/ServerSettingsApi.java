@@ -6,12 +6,35 @@ import top.chiloven.mcsmp4j.model.GameMode;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Strongly typed client for the {@code minecraft:serversettings} method group.
+ * Type-safe client for the {@code minecraft:serversettings} method group.
  *
- * <p>This interface exposes live server settings that can be queried and updated through MCSMP. Naming follows
- * Java conventions while preserving the protocol setting names in method documentation. Setters return the value
- * accepted by the server, which is useful when the server clamps values or rejects invalid input with a remote JSON-RPC
- * error.</p>
+ * <p>Server settings are mutable properties that affect joining, gameplay defaults, server visibility, status
+ * behavior,
+ * simulation radius, and networking behavior. Each setting is represented by a getter and a setter whose result is the
+ * server-confirmed value after the operation. This design lets management tools update UI state directly from the
+ * returned future rather than assuming the requested value was accepted unchanged.</p>
+ *
+ * <h2>Protocol mapping pattern</h2>
+ *
+ * <p>Getter methods map to paths such as {@code minecraft:serversettings/max_players}. Setter methods map to the
+ * corresponding {@code /set} path such as {@code minecraft:serversettings/max_players/set}. Java names use standard
+ * camel case while preserving the protocol setting name in Javadoc and implementation tests.</p>
+ *
+ * <h2>Validation</h2>
+ *
+ * <p>mcsmp4j performs minimal client-side validation for obviously invalid values such as negative player counts or
+ * blank
+ * messages. The server remains the final authority: it may clamp values, reject values outside its own bounds, or apply
+ * changes only after internal synchronization. Always prefer the returned value over the originally requested
+ * value.</p>
+ *
+ * <h2>Operational notes</h2>
+ *
+ * <p>Some settings take effect immediately for connected players; others primarily affect future joins or status
+ * replies.
+ * For example, allowlist-related settings interact with the allowlist API, distance settings affect gameplay load, and
+ * status settings affect external server-list queries. Administrative UI should group these operations carefully and
+ * avoid changing several unrelated settings without clear operator intent.</p>
  */
 public interface ServerSettingsApi {
 

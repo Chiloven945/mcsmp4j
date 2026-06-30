@@ -1,10 +1,11 @@
 package top.chiloven.mcsmp4j.event;
 
 /**
- * Server startup completed notification.
+ * Event emitted when the dedicated server reports that startup has completed.
  *
- * <p>This event is decoded from the {@code minecraft:notification/server/started} notification. On newer protocol
- * versions the management endpoint may be available before this event is emitted.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  */
 public record ServerStartedEvent() implements McsmpEvent {
 

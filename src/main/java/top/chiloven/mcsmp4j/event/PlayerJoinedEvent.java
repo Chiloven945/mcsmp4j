@@ -5,13 +5,13 @@ import top.chiloven.mcsmp4j.model.Player;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Player joined the server.
+ * Event emitted when a player joins the server.
  *
- * <p>This event is decoded from the {@code minecraft:notification/players/joined} notification. Register a listener
- * with
- * {@link McsmpEvents#on(Class, java.util.function.Consumer)} to receive this typed event.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  *
- * @param player the player that joined
+ * @param player the player identity reported by the server
  */
 public record PlayerJoinedEvent(
         Player player

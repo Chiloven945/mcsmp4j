@@ -5,14 +5,15 @@ import tools.jackson.databind.JsonNode;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Raw server notification event.
+ * Raw event wrapper exposed by the typed event registry.
  *
- * <p>This event is used when the notification is not decoded into a more specific record, and by raw event
- * listeners that want access to the original method and parameter JSON. It is also useful for custom modded
- * namespaces.</p>
+ * <p>This record keeps the canonical or extension notification method name and its raw parameter tree. It is useful
+ * for
+ * logging, debugging, custom namespaces, and protocol versions newer than this library release. If a typed class exists
+ * for an event, prefer the typed class for application logic and use raw events for diagnostics.</p>
  *
- * @param method the full JSON-RPC notification method name
- * @param params the raw notification parameters as a JSON node
+ * @param method the full notification method name
+ * @param params raw notification parameters as received after any configured legacy-prefix normalization
  */
 public record RawMcsmpEvent(
         String method,

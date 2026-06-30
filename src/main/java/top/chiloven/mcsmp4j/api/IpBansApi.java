@@ -8,11 +8,26 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Strongly typed client for the {@code minecraft:ip_bans} method group.
+ * Type-safe client for the {@code minecraft:ip_bans} method group.
  *
- * <p>IP bans reject connections from specific remote IP addresses. Add operations use {@link IncomingIpBan}
- * because the protocol allows the request to identify the ban either by raw address or by player information. Returned
- * entries use {@link IpBan} because the server resolves them into concrete ban-list entries.</p>
+ * <p>IP bans block connections from network addresses rather than player identities. The protocol distinguishes
+ * between
+ * {@link top.chiloven.mcsmp4j.model.IncomingIpBan} values used when adding bans and
+ * {@link top.chiloven.mcsmp4j.model.IpBan} values returned by the server. This mirrors Minecraft's ability to store ban
+ * metadata such as reason, source, creation time, and expiration.</p>
+ *
+ * <h2>Protocol mapping</h2>
+ *
+ * <ul>
+ *     <li>{@link #list()} maps to {@code minecraft:ip_bans}</li>
+ *     <li>{@link #set(java.util.Collection)} maps to {@code minecraft:ip_bans/set}</li>
+ *     <li>{@link #add(java.util.Collection)} maps to {@code minecraft:ip_bans/add}</li>
+ *     <li>{@link #remove(java.util.Collection)} maps to {@code minecraft:ip_bans/remove}</li>
+ *     <li>{@link #clear()} maps to {@code minecraft:ip_bans/clear}</li>
+ * </ul>
+ *
+ * <p>Use this API carefully in public tools. IP addresses are personal data in many jurisdictions, and ban lists should be
+ * logged, exported, or displayed only when appropriate for the server operator's policy.</p>
  */
 public interface IpBansApi {
 

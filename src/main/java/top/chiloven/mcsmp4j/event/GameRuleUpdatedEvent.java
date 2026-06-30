@@ -5,13 +5,13 @@ import top.chiloven.mcsmp4j.model.TypedGameRule;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A game rule value was changed.
+ * Event emitted when a game rule is updated.
  *
- * <p>This event is decoded from the {@code minecraft:notification/gamerules/updated} notification. Register a listener
- * with
- * {@link McsmpEvents#on(Class, java.util.function.Consumer)} to receive this typed event.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  *
- * @param gamerule the updated game rule, including its key, type, and new value
+ * @param gamerule the updated typed game-rule state
  */
 public record GameRuleUpdatedEvent(
         TypedGameRule gamerule

@@ -13,16 +13,43 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Immutable connection configuration for {@link McsmpClient}.
+ * Immutable configuration used to create an {@link McsmpClient}.
  *
- * <p>A configuration contains everything needed to open the management WebSocket: endpoint URI, authentication
- * strategy, optional {@code Origin} header, TLS customization, timeout values, JSON mapper, custom HTTP headers, and
- * version-compatibility behavior. Instances are created through {@link #builder()} and can be reused to create multiple
- * independent clients.</p>
+ * <p>This object captures every value needed for the opening WebSocket handshake and for local protocol processing:
+ * endpoint URI, authentication strategy, optional {@code Origin} header, connection and request timeouts, optional TLS
+ * customization, extra HTTP headers, the Jackson mapper, notification-prefix compatibility, and version-policy
+ * behavior. It is intentionally immutable so it can be stored, reused, logged, or passed between application components
+ * without being changed unexpectedly.</p>
  *
- * <p>Unless configured otherwise, the builder uses no authentication, a 10 second connection timeout, a 30 second
- * request timeout, the default mcsmp4j Jackson mapper, and {@link McsmpVersionPolicy#COMPATIBLE}. Production clients
- * should normally call {@link Builder#secret(String)} or {@link Builder#auth(McsmpAuth)} before building.</p>
+ * <h2>Endpoint and TLS</h2>
+ *
+ * <p>The endpoint must use {@code ws://} or {@code wss://}. Production Minecraft servers commonly enable TLS for the
+ * management endpoint, so {@code wss://} is usually the appropriate scheme. When the server uses a self-signed
+ * certificate or a private certificate authority, configure {@link Builder#sslContext(javax.net.ssl.SSLContext)} with
+ * an SSL context that trusts that certificate. The library does not disable certificate validation automatically.</p>
+ *
+ * <h2>Authentication and origin</h2>
+ *
+ * <p>MCSMP servers require the configured management secret. {@link Builder#secret(String)} configures the common
+ * bearer
+ * form. {@link Builder#auth(McsmpAuth)} can be used when an application needs the WebSocket subprotocol form. Some
+ * servers also require an {@code Origin} header listed in {@code management-server-allowed-origins}; use
+ * {@link Builder#origin(String)} for that value.</p>
+ *
+ * <h2>Timeouts</h2>
+ *
+ * <p>{@link #connectTimeout()} limits the WebSocket opening handshake. {@link #requestTimeout()} applies to every
+ * individual JSON-RPC request after it is sent. Long-running operations such as server saves should be given enough
+ * time for the server to answer. A timeout does not necessarily mean the server did not perform the action; it means
+ * the client did not receive the corresponding JSON-RPC response within the configured window.</p>
+ *
+ * <h2>JSON mapper</h2>
+ *
+ * <p>The default mapper returned by {@link McsmpObjectMapper#create()} is configured for the model types shipped with
+ * this
+ * library. Supplying a custom mapper is advanced usage. If you replace it, keep the same Jackson modules and annotation
+ * behavior unless you fully control both serialization and deserialization of all request/response/notification
+ * payloads.</p>
  */
 public final class McsmpClientConfig {
 

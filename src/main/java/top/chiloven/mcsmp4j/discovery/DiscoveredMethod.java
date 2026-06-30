@@ -6,14 +6,15 @@ import tools.jackson.databind.JsonNode;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Method entry advertised by {@code rpc.discover}.
+ * Description of one JSON-RPC method advertised by {@code rpc.discover}.
  *
- * <p>Discovery schemas are intentionally kept close to their original JSON form. mcsmp4j extracts method names
- * for feature checks while retaining the optional raw schema node so advanced applications can inspect parameters,
- * results, descriptions, or extension metadata that the library does not model directly.</p>
+ * <p>The record preserves the method name and the optional raw schema fragment associated with that method. The schema
+ * is
+ * kept as a Jackson {@link tools.jackson.databind.JsonNode} so tools can inspect details that mcsmp4j does not yet
+ * model, such as extension parameters, result schemas, descriptions, or custom metadata.</p>
  *
  * @param name   the full JSON-RPC method name, such as {@code minecraft:server/status}
- * @param schema optional raw schema information associated with the method
+ * @param schema the raw discovery schema for the method, or {@code null} when no schema fragment was present
  */
 public record DiscoveredMethod(
         String name,

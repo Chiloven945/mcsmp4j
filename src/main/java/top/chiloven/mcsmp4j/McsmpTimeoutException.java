@@ -1,11 +1,13 @@
 package top.chiloven.mcsmp4j;
 
 /**
- * Raised when an MCSMP request does not receive a response before the configured request timeout.
+ * Exception raised when a JSON-RPC request does not receive a matching response before the configured timeout.
  *
- * <p>The timeout duration is controlled by {@link McsmpClientConfig#requestTimeout()}. When this exception is
- * raised the underlying WebSocket may still be connected; callers may decide whether to continue using the client,
- * close it, or perform their own retry logic.</p>
+ * <p>A timeout is a client-side observation, not proof that the server did not execute the requested operation. The
+ * server
+ * may still be busy, the response may have been delayed, or the connection may be unhealthy. For operations with
+ * lasting side effects, such as saving or changing server settings, applications should consider reading the resulting
+ * state after reconnecting or after a longer timeout rather than immediately repeating the operation.</p>
  */
 public final class McsmpTimeoutException extends McsmpException {
 

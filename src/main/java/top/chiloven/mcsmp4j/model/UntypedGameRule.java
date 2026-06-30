@@ -3,13 +3,18 @@ package top.chiloven.mcsmp4j.model;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Game rule update request.
+ * Game-rule update request sent to {@code minecraft:gamerules/update}.
  *
- * <p>The update endpoint accepts a key and scalar value. The server infers the expected value type from the game
- * rule key and returns a {@link TypedGameRule} after applying the update.</p>
+ * <p>The update endpoint accepts a key and scalar value. It does not require the caller to include the declared type
+ * because the server already knows each rule's type. For safe UI workflows, first call
+ * {@link top.chiloven.mcsmp4j.api.GamerulesApi#list()}, inspect the returned {@link TypedGameRule#type()}, then create
+ * an appropriate {@code UntypedGameRule} with {@link #bool(String, boolean)} or {@link #integer(String, int)}.</p>
+ *
+ * <p>{@link #legacyString(String, String)} exists only for compatibility with older or custom servers. Modern vanilla
+ * servers should receive typed boolean or integer JSON values.</p>
  *
  * @param key   the game-rule key to update
- * @param value the new value to send
+ * @param value the new scalar value to send
  */
 public record UntypedGameRule(
         String key,

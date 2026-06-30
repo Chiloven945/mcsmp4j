@@ -3,9 +3,14 @@ package top.chiloven.mcsmp4j.model;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Minecraft version identifier exposed by the server status endpoint.
+ * Minecraft version metadata reported by the server.
  *
- * @param name     the human-readable version name, such as {@code "1.21.11"} or a snapshot name
+ * <p>This record is display-oriented. It describes the Minecraft server software version, not the mcsmp4j artifact
+ * version
+ * and not necessarily the MCSMP protocol version. Use {@link top.chiloven.mcsmp4j.version.McsmpProtocolVersion} and
+ * {@link top.chiloven.mcsmp4j.discovery.McsmpCapabilities} for protocol compatibility decisions.</p>
+ *
+ * @param name     the human-readable Minecraft version name, such as {@code 1.21.11}
  * @param protocol the Minecraft network protocol number reported by the server
  */
 public record MinecraftVersion(

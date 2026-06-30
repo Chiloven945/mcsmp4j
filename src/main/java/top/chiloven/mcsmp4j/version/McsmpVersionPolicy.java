@@ -1,10 +1,12 @@
 package top.chiloven.mcsmp4j.version;
 
 /**
- * Controls how aggressively mcsmp4j enables compatibility behavior around protocol-version changes.
+ * High-level compatibility policy used by client configuration and event decoding.
  *
- * <p>The policy affects local client behavior only. It does not change what the server supports, and it does not
- * emulate unsupported methods. Use discovery and {@link McsmpFeature} checks for server-side capability decisions.</p>
+ * <p>The policy controls how much compatibility behavior mcsmp4j should enable locally when protocol history contains
+ * transitional shapes. For example, {@link #COMPATIBLE} accepts the legacy notification prefix while still using the
+ * modern typed event model. The policy does not force servers to support methods and does not hide remote errors; it
+ * only controls client-side interpretation where the library can safely support more than one shape.</p>
  */
 public enum McsmpVersionPolicy {
 

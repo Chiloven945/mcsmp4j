@@ -4,14 +4,16 @@ import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 /**
- * Raw JSON-RPC 2.0 error payload returned by a server.
+ * Raw JSON-RPC error object returned by a server.
  *
- * <p>Most callers will see remote errors as {@link top.chiloven.mcsmp4j.McsmpRemoteException}. This record is
- * exposed for users who work directly with protocol-level objects or custom transports.</p>
+ * <p>This record mirrors the standard JSON-RPC {@code error} object: a numeric code, a message, and optional
+ * structured
+ * data. Most application code sees this information through {@link top.chiloven.mcsmp4j.McsmpRemoteException}; this
+ * record is useful for diagnostics, low-level protocol tools, and extension clients that inspect raw responses.</p>
  *
- * @param code    the numeric JSON-RPC error code
- * @param message the server-provided error message
- * @param data    optional implementation-defined error data
+ * @param code    the JSON-RPC error code
+ * @param message the server-supplied error message
+ * @param data    optional structured error data, or {@code null} when absent
  */
 public record JsonRpcError(
         int code,

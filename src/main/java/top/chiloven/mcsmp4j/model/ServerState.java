@@ -5,14 +5,22 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Current server lifecycle state and online player snapshot.
+ * Snapshot returned by the server status endpoint and status heartbeat notifications.
  *
- * <p>On protocol versions where the management endpoint is available before the Minecraft server has fully
- * started, {@link #started()} can be {@code false}. In that state, only a subset of methods and notifications may be
- * usable.</p>
+ * <p>{@code ServerState} describes the dedicated server's lifecycle state, online-player snapshot, and reported
+ * Minecraft
+ * version at one point in time. It is not a live object. Later players joining/leaving or a server restarting do not
+ * mutate an existing instance; subscribe to status and player events or call
+ * {@link top.chiloven.mcsmp4j.api.ServerApi#status()} again to refresh state.</p>
  *
- * @param started whether the Minecraft dedicated server has completed startup
- * @param players the current online player snapshot
+ * <h2>Pre-start management</h2>
+ *
+ * <p>Protocol versions that expose the management endpoint before the dedicated server finishes startup may return
+ * {@link #started()} as {@code false}. In that state, dashboards can still show that management is reachable while
+ * waiting for world load, but many gameplay-related methods may be unavailable or may return remote errors.</p>
+ *
+ * @param started whether the dedicated server has completed startup
+ * @param players the online-player snapshot reported with this state
  * @param version the Minecraft version reported by the server
  */
 public record ServerState(

@@ -1,11 +1,12 @@
 package top.chiloven.mcsmp4j;
 
 /**
- * Raised when the client cannot establish or maintain the WebSocket connection.
+ * Exception raised for transport-level WebSocket connection failures.
  *
- * <p>This exception is used for transport-level problems that are not specifically authentication failures:
- * unreachable hosts, TLS setup errors, failed handshakes, unexpected close frames, or I/O errors while sending or
- * receiving JSON-RPC messages.</p>
+ * <p>Connection failures include DNS errors, refused TCP connections, TLS handshake problems, premature close frames,
+ * unexpected I/O errors, and other failures that prevent the client from maintaining a usable WebSocket. Authentication
+ * rejections are represented by {@link McsmpAuthenticationException}; server-side JSON-RPC errors are represented by
+ * {@link McsmpRemoteException}.</p>
  */
 public final class McsmpConnectionException extends McsmpException {
 

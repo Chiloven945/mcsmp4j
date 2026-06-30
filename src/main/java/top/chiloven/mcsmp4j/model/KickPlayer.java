@@ -6,13 +6,19 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Request payload for kicking a player.
+ * Request object used to kick a connected player.
  *
- * <p>The payload identifies the target player and may include a message shown to the player when the server
- * disconnects them.</p>
+ * <p>The kick endpoint accepts a player selector and an optional message. The selector identifies the connected player
+ * or
+ * players the server should remove. The optional {@link #message()} is presented to the player by the server, typically
+ * as the disconnect reason. If no message is provided, the server chooses its default reason.</p>
  *
- * @param player  the player to kick
- * @param message optional disconnect message shown to the player
+ * <p>Kick operations are best treated as administrative side effects rather than ordinary state changes. A successful
+ * response indicates which players the server reports as kicked, but clients should still listen for
+ * {@link top.chiloven.mcsmp4j.event.PlayerLeftEvent} when maintaining a live player list.</p>
+ *
+ * @param player  the player selector to kick
+ * @param message optional disconnect message, or {@code null} to let the server choose a default
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record KickPlayer(

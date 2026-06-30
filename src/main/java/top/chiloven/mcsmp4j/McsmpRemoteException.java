@@ -4,11 +4,17 @@ import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 /**
- * Raised when the server returns a JSON-RPC error response.
+ * Exception representing a JSON-RPC error object returned by the server.
  *
- * <p>Unlike {@link McsmpProtocolException}, this exception means the response was well-formed but represented a
- * remote failure, such as an unknown method, invalid parameters, or a server-side operation error. The JSON-RPC error
- * code, message, and optional data object are retained so callers can implement precise handling.</p>
+ * <p>When a request reaches the server and the server responds with {@code error} instead of {@code result}, mcsmp4j
+ * completes the request future exceptionally with this type. The exception preserves the numeric JSON-RPC code, the
+ * remote message string, and optional structured error data. Applications building user interfaces should display the
+ * remote message and may log the code/data for diagnostics.</p>
+ *
+ * <p>Common situations include unknown methods, invalid parameters, authorization decisions made by the server,
+ * attempts to
+ * modify unavailable state, or custom namespace errors. Because the request was processed by the remote endpoint,
+ * blindly retrying may repeat the same logical error unless the input changes.</p>
  */
 public final class McsmpRemoteException extends McsmpException {
 

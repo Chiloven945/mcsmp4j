@@ -6,14 +6,13 @@ import tools.jackson.databind.JsonNode;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Notification entry advertised by {@code rpc.discover}.
+ * Description of one JSON-RPC notification advertised by {@code rpc.discover}.
  *
- * <p>Notifications are server-to-client JSON-RPC messages that do not have an {@code id}. This record stores the
- * notification method name and any raw schema details returned by the server so applications can decide whether to
- * register typed or raw listeners.</p>
+ * <p>Notifications are server-to-client messages without a JSON-RPC id. This record is used when building capability
+ * snapshots and by diagnostic tools that want to list exactly which event methods the server claims to emit.</p>
  *
  * @param name   the full notification method name, such as {@code minecraft:notification/players/joined}
- * @param schema optional raw schema information associated with the notification
+ * @param schema the raw discovery schema for the notification, or {@code null} when no schema fragment was present
  */
 public record DiscoveredNotification(
         String name,

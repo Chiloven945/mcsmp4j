@@ -8,10 +8,24 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Strongly typed client for the {@code minecraft:bans} method group.
+ * Type-safe client for the {@code minecraft:bans} user-ban method group.
  *
- * <p>User bans prevent selected Minecraft accounts from joining the server. Operations return the complete ban
- * list after the requested change so callers can update their local UI or cache without making a second request.</p>
+ * <p>User bans prevent specific player identities from joining the server. This API manages bans represented by
+ * {@link top.chiloven.mcsmp4j.model.UserBan}; removals use {@link top.chiloven.mcsmp4j.model.Player} selectors because
+ * the server only needs to identify the banned player being removed.</p>
+ *
+ * <h2>Protocol mapping</h2>
+ *
+ * <ul>
+ *     <li>{@link #list()} maps to {@code minecraft:bans}</li>
+ *     <li>{@link #set(java.util.Collection)} maps to {@code minecraft:bans/set}</li>
+ *     <li>{@link #add(java.util.Collection)} maps to {@code minecraft:bans/add}</li>
+ *     <li>{@link #remove(java.util.Collection)} maps to {@code minecraft:bans/remove}</li>
+ *     <li>{@link #clear()} maps to {@code minecraft:bans/clear}</li>
+ * </ul>
+ *
+ * <p>Ban records may contain a reason, source, and optional expiration instant. The server may normalize or enrich returned
+ * ban entries, so treat method results as authoritative state snapshots.</p>
  */
 public interface BansApi {
 

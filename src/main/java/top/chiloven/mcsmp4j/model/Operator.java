@@ -6,14 +6,22 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Server operator entry.
+ * Operator-list entry used by the {@code minecraft:operators} API.
  *
- * <p>Operators are players that have elevated command permissions. The permission level and player-limit bypass
- * flag are optional in request payloads so callers can let the server apply its defaults.</p>
+ * <p>An operator entry grants elevated Minecraft permissions to a player. The {@link #permissionLevel()} value is the
+ * permission
+ * level used by the server for command authorization, and {@link #bypassesPlayerLimit()} indicates whether the player
+ * can join when the server is otherwise full. Management applications should treat this record as security-sensitive
+ * because adding or changing operators can allow in-game administrative control.</p>
  *
- * @param player              the player that should be or is an operator
- * @param permissionLevel     optional command permission level, usually between {@code 0} and {@code 4}
- * @param bypassesPlayerLimit optional flag indicating whether this operator bypasses the player limit
+ * <p>The {@link #player()} component accepts the same partial selector rules as {@link Player}. When the server
+ * returns
+ * operator entries it may include resolved UUIDs and names even if a request supplied only one field.</p>
+ *
+ * @param player              the player who is or should become an operator
+ * @param permissionLevel     the Minecraft operator permission level requested or reported by the server, or
+ *                            {@code null} for the server default
+ * @param bypassesPlayerLimit whether the operator may bypass the configured maximum player count
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record Operator(

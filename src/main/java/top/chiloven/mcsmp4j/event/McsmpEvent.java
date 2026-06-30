@@ -1,11 +1,17 @@
 package top.chiloven.mcsmp4j.event;
 
 /**
- * Base type for all high-level MCSMP notifications decoded by mcsmp4j.
+ * Marker interface for all typed MCSMP notification events.
  *
- * <p>Every official notification event record implements this sealed interface and exposes the original
- * JSON-RPC notification method through {@link #method()}. Unknown notifications and custom namespace notifications are
- * represented by {@link RawMcsmpEvent}.</p>
+ * <p>Every event corresponds to one JSON-RPC notification method sent by the server. Implementations are Java records
+ * for
+ * notifications with payloads or empty records for marker notifications. The {@link #method()} value is always the
+ * modern canonical notification method name, even when local compatibility mode accepted an older legacy prefix.</p>
+ *
+ * <p>Use this type as the upper bound when registering generic listeners with
+ * {@link McsmpEvents#on(Class, java.util.function.Consumer)}.
+ * For raw extension notifications that do not have a typed class, use {@link RawMcsmpEvent} or the protocol-level raw
+ * notification listener.</p>
  */
 public sealed interface McsmpEvent permits
         ServerStartedEvent,

@@ -1,10 +1,11 @@
 package top.chiloven.mcsmp4j.event;
 
 /**
- * Server shutdown started notification.
+ * Event emitted when the dedicated server begins shutting down.
  *
- * <p>This event is decoded from the {@code minecraft:notification/server/stopping} notification. This event is emitted
- * when the server begins stopping.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  */
 public record ServerStoppingEvent() implements McsmpEvent {
 

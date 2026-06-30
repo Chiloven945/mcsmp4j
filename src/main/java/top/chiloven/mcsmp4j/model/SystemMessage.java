@@ -8,15 +8,23 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 /**
- * System message payload sent by the server to all or selected players.
+ * Payload sent through {@link top.chiloven.mcsmp4j.api.ServerApi#systemMessage(SystemMessage)}.
  *
- * <p>The {@code overlay} flag controls whether the message is displayed as a normal chat/system message or as an
- * action-bar overlay. When {@code receivingPlayers} is empty, the server sends the message to all applicable
- * players.</p>
+ * <p>A system message contains the message content, a display-mode flag, and an optional recipient list. When
+ * {@link #overlay()} is {@code false}, the message is delivered as a normal chat/system message. When it is
+ * {@code true}, the server should display the message as an overlay/action-bar style message where supported. An empty
+ * recipient list means the server should broadcast to all applicable players.</p>
  *
- * @param message          the message content
- * @param overlay          {@code true} for action-bar overlay delivery, {@code false} for normal chat/system delivery
- * @param receivingPlayers optional target players; empty means all players
+ * <h2>Targeting</h2>
+ *
+ * <p>Use {@link #chat(Message)} or {@link #actionBar(Message)} to create a broadcast, then call
+ * {@link #to(java.util.Collection)}
+ * when the message should be sent only to selected players. Recipient selectors follow the same rules as
+ * {@link Player}; the server decides whether partial selectors match current players.</p>
+ *
+ * @param message          the text or translatable message content
+ * @param overlay          whether the message should be displayed as an overlay/action-bar message
+ * @param receivingPlayers explicit target players; an empty list means broadcast
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public record SystemMessage(

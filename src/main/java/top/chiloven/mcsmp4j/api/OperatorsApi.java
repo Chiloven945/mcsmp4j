@@ -8,10 +8,25 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Strongly typed client for the {@code minecraft:operators} method group.
+ * Type-safe client for the {@code minecraft:operators} method group.
  *
- * <p>Operators are players with elevated command permissions. The protocol exposes the operator list as a full
- * list resource: operations that mutate it return the complete operator snapshot after the change.</p>
+ * <p>Operators are players granted elevated in-game permissions. An {@link top.chiloven.mcsmp4j.model.Operator}
+ * combines a
+ * player selector with the permission level and the bypass-player-limit flag used by Minecraft's operator list. The API
+ * returns the complete operator list after each mutation.</p>
+ *
+ * <h2>Protocol mapping</h2>
+ *
+ * <ul>
+ *     <li>{@link #list()} maps to {@code minecraft:operators}</li>
+ *     <li>{@link #set(java.util.Collection)} maps to {@code minecraft:operators/set}</li>
+ *     <li>{@link #add(java.util.Collection)} maps to {@code minecraft:operators/add}</li>
+ *     <li>{@link #remove(java.util.Collection)} maps to {@code minecraft:operators/remove}</li>
+ *     <li>{@link #clear()} maps to {@code minecraft:operators/clear}</li>
+ * </ul>
+ *
+ * <p>Changing operators is a security-sensitive action. Applications should authenticate their users separately before
+ * calling this API; MCSMP authenticates the management client, not the human operator using your application.</p>
  */
 public interface OperatorsApi {
 

@@ -1,15 +1,17 @@
 package top.chiloven.mcsmp4j;
 
 /**
- * Base unchecked exception for all failures reported by mcsmp4j.
+ * Base class for all mcsmp4j-specific runtime exceptions.
  *
- * <p>The client uses asynchronous APIs, so most failures are delivered by completing a
- * {@link java.util.concurrent.CompletableFuture} exceptionally with one of this class's subclasses. Callers that use
- * {@code join()} will see the exception wrapped in {@link java.util.concurrent.CompletionException}, while callers that
- * use {@code get()} will see it wrapped in {@link java.util.concurrent.ExecutionException}.</p>
+ * <p>The library uses unchecked exceptions because almost all public operations are asynchronous and report failures
+ * by
+ * completing {@link java.util.concurrent.CompletableFuture futures} exceptionally. Catch this base type when an
+ * application wants to handle all client-library failures in one place, or catch one of the more specific subclasses
+ * when presenting precise diagnostics to users.</p>
  *
- * <p>Subclasses distinguish connection failures, authentication or origin rejection, malformed protocol data,
- * request timeouts, remote JSON-RPC errors, and unsupported optional protocol features.</p>
+ * <p>Subclasses distinguish the failure layer: authentication and connection problems during the WebSocket handshake,
+ * protocol-shape problems while decoding JSON-RPC, remote JSON-RPC error objects returned by the server, request
+ * timeouts, and feature checks that fail because a server does not expose the requested capability.</p>
  */
 public class McsmpException extends RuntimeException {
 

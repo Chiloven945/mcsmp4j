@@ -21,31 +21,71 @@ import java.util.concurrent.CompletableFuture;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Main entry point for connecting to a Minecraft Server Management Protocol endpoint.
+ * Primary entry point for connecting to and controlling an MCSMP endpoint.
  *
- * <p>An {@code McsmpClient} owns one WebSocket connection and exposes three layers of functionality:</p>
+ * <p>An {@code McsmpClient} represents exactly one WebSocket connection to a Minecraft dedicated server's management
+ * endpoint. It owns the JSON-RPC request id sequence, the set of pending request futures, the raw notification stream,
+ * and all typed API facade objects exposed by the client. Applications normally create one client per management
+ * server.</p>
+ *
+ * <h2>Layered API design</h2>
+ *
+ * <p>The client exposes three layers that can be mixed freely:</p>
  *
  * <ul>
- *     <li>strongly typed official API groups such as {@link #server()}, {@link #players()}, and
- *     {@link #serverSettings()};</li>
- *     <li>the low-level {@link #raw()} JSON-RPC caller for custom namespaces and newly introduced methods;</li>
- *     <li>typed and raw notification listeners through {@link #events()} and {@link #onNotification(JsonRpcNotificationListener)}.</li>
+ *     <li><strong>Typed official APIs</strong>, such as {@link #server()}, {@link #players()}, {@link #allowlist()},
+ *     {@link #serverSettings()}, and {@link #gamerules()}, for methods in the official {@code minecraft:*} namespace.</li>
+ *     <li><strong>Raw JSON-RPC calls</strong> through {@link #raw()} for custom namespaces, modded servers, diagnostic
+ *     tools, or protocol features that are newer than this library release.</li>
+ *     <li><strong>Notification listeners</strong> through {@link #events()} for typed events and
+ *     {@link #onNotification(JsonRpcNotificationListener)} for untyped JSON-RPC notifications.</li>
  * </ul>
  *
- * <p>The client is asynchronous. Operations return {@link CompletableFuture}s and never block the caller while
- * waiting for server responses. Call {@link #close()} or use try-with-resources to close the WebSocket and fail
- * any pending requests when the client is no longer needed.</p>
+ * <h2>Connection lifecycle</h2>
+ *
+ * <p>A client created by {@link #builder()} or {@link #create(McsmpClientConfig)} is initially disconnected. Call
+ * {@link #connect()} before sending requests or relying on notifications. A connected client remains usable until the
+ * remote endpoint closes, the local application calls {@link #closeAsync()} or {@link #close()}, or an unrecoverable
+ * transport error occurs. This type does not currently implement automatic reconnect because reconnect policy is highly
+ * application-specific: some tools should fail fast, some should back off, and some should rediscover capabilities after a
+ * server restart.</p>
+ *
+ * <h2>Asynchronous programming model</h2>
+ *
+ * <p>All server operations return {@link java.util.concurrent.CompletableFuture}. The future completes on response, on
+ * request timeout, or when the connection is closed before a response arrives. Callers that want blocking behavior may use
+ * {@link java.util.concurrent.CompletableFuture#join()} or {@link java.util.concurrent.CompletableFuture#get()}, but GUI,
+ * server plugin, and bot applications should usually compose futures instead of blocking their event loops.</p>
+ *
+ * <h2>Error model</h2>
+ *
+ * <p>Handshake rejection caused by a missing/incorrect secret or disallowed origin is reported as
+ * {@link McsmpAuthenticationException}. I/O failures are reported as {@link McsmpConnectionException}. A server-side
+ * JSON-RPC error response is reported as {@link McsmpRemoteException}; inspect its {@link McsmpRemoteException#code()},
+ * {@link McsmpRemoteException#remoteMessage()}, and {@link McsmpRemoteException#data()} when building user-facing tools.
+ * Malformed JSON-RPC messages are reported as {@link McsmpProtocolException}.</p>
+ *
+ * <h2>Typical usage</h2>
  *
  * <pre>{@code
  * try (McsmpClient client = McsmpClient.builder()
  *         .endpoint(URI.create("wss://localhost:25585"))
- *         .secret("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmn")
+ *         .secret(System.getenv("MCSMP_SECRET"))
  *         .origin("mcsmp4j")
  *         .build()) {
  *     client.connect().join();
- *     ServerState status = client.server().status().join();
+ *
+ *     McsmpCapabilities capabilities = client.discover().join();
+ *     ServerState state = client.server().status().join();
+ *
+ *     client.events().on(PlayerJoinedEvent.class, event ->
+ *             System.out.println(event.player().displayName() + " joined"));
  * }
  * }</pre>
+ *
+ * <p>{@code McsmpClient} is thread-safe for typical concurrent use: multiple application threads may issue requests,
+ * register listeners, and close subscriptions concurrently. Listener callbacks should still be written defensively and
+ * should not assume they run on a dedicated application thread.</p>
  */
 public final class McsmpClient implements AutoCloseable {
 

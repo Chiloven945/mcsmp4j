@@ -8,17 +8,16 @@ import java.time.Instant;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Request payload for creating an IP ban.
+ * IP-ban request object accepted by the {@code minecraft:ip_bans/add} endpoint.
  *
- * <p>At least one of {@code ip} or {@code player} must be present. A request can ban a concrete address directly
- * or ask the server to resolve a player's current address. Optional reason, source, and expiration metadata can be
- * attached to the ban entry.</p>
+ * <p>The incoming shape contains the IP address and optional metadata the server may use to create a full
+ * {@link IpBan}. The result of adding an incoming ban is the server's normalized ban list, so callers should not assume
+ * that all optional fields are echoed exactly.</p>
  *
- * @param ip      optional IP address to ban
- * @param player  optional player whose address should be banned
- * @param reason  optional human-readable ban reason
- * @param source  optional source or actor that created the ban
- * @param expires optional expiration instant; {@code null} means permanent
+ * @param ip      the IP address string to ban
+ * @param reason  optional reason to store with the ban
+ * @param source  optional source/actor name to store with the ban
+ * @param expires optional expiration instant; {@code null} requests a permanent or server-default ban
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record IncomingIpBan(

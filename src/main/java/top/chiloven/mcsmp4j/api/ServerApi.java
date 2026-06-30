@@ -7,10 +7,26 @@ import top.chiloven.mcsmp4j.model.SystemMessage;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Strongly typed client for the {@code minecraft:server} method group.
+ * Type-safe client for the {@code minecraft:server} method group.
  *
- * <p>This group covers server lifecycle status, save and stop requests, and broadcast or targeted system
- * messages. These operations affect the whole dedicated server rather than a single list resource.</p>
+ * <p>This interface contains lifecycle and messaging operations for the dedicated server itself: reading status,
+ * starting a
+ * save, requesting shutdown, and broadcasting system messages. These operations can have visible side effects for every
+ * player on the server, so management applications should present confirmation prompts for save/stop/message actions
+ * when used interactively.</p>
+ *
+ * <h2>Protocol mapping</h2>
+ *
+ * <ul>
+ *     <li>{@link #status()} maps to {@code minecraft:server/status}</li>
+ *     <li>{@link #save(boolean)} maps to {@code minecraft:server/save}</li>
+ *     <li>{@link #stop()} maps to {@code minecraft:server/stop}</li>
+ *     <li>{@link #systemMessage(top.chiloven.mcsmp4j.model.SystemMessage)} maps to {@code minecraft:server/system_message}</li>
+ * </ul>
+ *
+ * <p>In newer protocol versions the management endpoint may be reachable before the Minecraft server has fully started.
+ * When {@link top.chiloven.mcsmp4j.model.ServerState#started()} is {@code false}, only a subset of operations may be
+ * available. Use discovery and status polling to build startup-aware dashboards.</p>
  */
 public interface ServerApi {
 

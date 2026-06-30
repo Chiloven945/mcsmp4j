@@ -5,13 +5,13 @@ import top.chiloven.mcsmp4j.model.ServerState;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Server status heartbeat notification.
+ * Heartbeat event containing the current server status snapshot.
  *
- * <p>This event is decoded from the {@code minecraft:notification/server/status} notification. Register a listener
- * with
- * {@link McsmpEvents#on(Class, java.util.function.Consumer)} to receive this typed event.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  *
- * @param status the server status snapshot carried by the heartbeat
+ * @param status the server state snapshot carried by the heartbeat
  */
 public record ServerStatusEvent(
         ServerState status

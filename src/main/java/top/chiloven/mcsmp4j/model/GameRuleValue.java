@@ -9,12 +9,23 @@ import java.util.OptionalInt;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Value of a Minecraft game rule.
+ * Sealed representation of a game-rule scalar value.
  *
- * <p>Protocol version {@code 2.0.0} changed game-rule values from strings to typed JSON booleans and integers.
- * This sealed interface therefore supports all three shapes: {@link BooleanValue}, {@link IntegerValue}, and the legacy
- * {@link StringValue}. The typed API preserves the legacy variant so clients can still interoperate with older
- * experimental servers and custom implementations.</p>
+ * <p>MCSMP has used more than one JSON shape for game-rule values. Modern protocol versions use actual JSON booleans
+ * and integers. Earlier experimental versions and some custom servers may still use strings. This sealed interface
+ * preserves all supported shapes while giving callers convenient typed accessors.</p>
+ *
+ * <h2>Creating values</h2>
+ *
+ * <p>Use {@link #of(boolean)} for boolean rules, {@link #of(int)} for integer rules, and {@link #legacyString(String)}
+ * only when deliberately targeting a legacy/custom endpoint. {@link UntypedGameRule#bool(String, boolean)} and
+ * {@link UntypedGameRule#integer(String, int)} are preferred at the API boundary.</p>
+ *
+ * <h2>Reading values</h2>
+ *
+ * <p>Use {@link #asBoolean()}, {@link #asInteger()}, and {@link #asString()} instead of switching directly on nested
+ * record classes when writing application UI. Direct pattern matching is still appropriate for exhaustive protocol
+ * tooling.</p>
  */
 public sealed interface GameRuleValue permits
         GameRuleValue.BooleanValue,

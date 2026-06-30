@@ -1,11 +1,12 @@
 package top.chiloven.mcsmp4j.event;
 
 /**
- * Handle returned when registering an MCSMP event listener.
+ * Handle returned by typed or raw event listener registration.
  *
- * <p>Subscriptions are lightweight and idempotent from the caller's perspective: calling {@link #close()} more
- * than once should be harmless. Applications should close subscriptions when a UI component, plugin, or service no
- * longer needs notifications to avoid retaining listener references.</p>
+ * <p>Closing the subscription removes the associated listener from the registry. The method is idempotent, so cleanup
+ * code
+ * may safely close a subscription more than once. Closing the owning {@link top.chiloven.mcsmp4j.McsmpClient} also
+ * closes its event registry and removes active listener registrations.</p>
  */
 @FunctionalInterface
 public interface EventSubscription extends AutoCloseable {

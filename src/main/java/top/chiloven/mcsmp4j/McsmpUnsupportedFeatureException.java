@@ -5,11 +5,14 @@ import top.chiloven.mcsmp4j.version.McsmpFeature;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Raised when user code requires an optional protocol feature that the connected server does not advertise.
+ * Exception raised when application code attempts to require a capability that the discovered server does not expose.
  *
- * <p>The feature set is normally produced by {@link top.chiloven.mcsmp4j.McsmpClient#discover()} and represented
- * by {@link top.chiloven.mcsmp4j.discovery.McsmpCapabilities}. This exception is useful when a library or application
- * wants to fail fast before using functionality introduced by newer protocol versions.</p>
+ * <p>This type is intended for code paths that explicitly combine
+ * {@link top.chiloven.mcsmp4j.discovery.McsmpCapabilities}
+ * with {@link top.chiloven.mcsmp4j.version.McsmpFeature}. The typed API itself remains permissive because custom
+ * servers may support features in non-standard combinations. Applications can use this exception to produce clear
+ * messages such as "world upgrade notifications require protocol 3.1.0 or a server that advertises that
+ * notification".</p>
  */
 public final class McsmpUnsupportedFeatureException extends McsmpException {
 

@@ -5,13 +5,13 @@ import top.chiloven.mcsmp4j.model.IpBan;
 import static java.util.Objects.requireNonNull;
 
 /**
- * IP address was added to the IP ban list.
+ * Event emitted when an IP ban is added.
  *
- * <p>This event is decoded from the {@code minecraft:notification/ip_bans/added} notification. Register a listener
- * with
- * {@link McsmpEvents#on(Class, java.util.function.Consumer)} to receive this typed event.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  *
- * @param ban the IP ban entry that was added
+ * @param ban the IP ban entry that was added; the protocol names this parameter {@code player}
  */
 public record IpBanAddedEvent(
         IpBan ban

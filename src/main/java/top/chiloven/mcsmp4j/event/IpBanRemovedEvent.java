@@ -3,12 +3,13 @@ package top.chiloven.mcsmp4j.event;
 import static java.util.Objects.requireNonNull;
 
 /**
- * IP address was removed from the IP ban list.
+ * Event emitted when an IP ban is removed.
  *
- * <p>This event is decoded from the {@code minecraft:notification/ip_bans/removed} notification. The protocol
- * carries only the removed address string rather than the full former ban entry.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  *
- * @param ip the IP address that was removed from the ban list
+ * @param ip the IP address string removed from the ban list; the protocol names this parameter {@code player}
  */
 public record IpBanRemovedEvent(
         String ip

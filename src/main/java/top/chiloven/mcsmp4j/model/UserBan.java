@@ -8,11 +8,23 @@ import java.time.Instant;
 import static java.util.Objects.requireNonNull;
 
 /**
- * User ban entry accepted and returned by the MCSMP user ban endpoints.
+ * User-ban entry used by the {@code minecraft:bans} API.
  *
- * @param player  the banned player
- * @param reason  optional human-readable ban reason
- * @param source  optional source or actor that created the ban
+ * <p>A user ban targets a Minecraft player identity rather than a network address. The server stores the banned player
+ * and
+ * may also store the reason, source, and optional expiration instant. A {@code null} expiration means the ban is
+ * permanent. The server is responsible for enforcing the ban during login and for deciding how expired bans are
+ * handled.</p>
+ *
+ * <h2>Creation helpers</h2>
+ *
+ * <p>Use {@link #permanent(Player)}, {@link #permanent(Player, String)}, {@link #byName(String)}, or
+ * {@link #temporary(Player, java.time.Instant)} for common cases. The canonical constructor remains available when an
+ * application needs to specify source or all optional fields explicitly.</p>
+ *
+ * @param player  the banned player selector or identity
+ * @param reason  optional human-readable reason; {@code null} means no reason was supplied
+ * @param source  optional source/actor that created the ban; {@code null} means unspecified
  * @param expires optional expiration instant; {@code null} means permanent
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)

@@ -3,12 +3,13 @@ package top.chiloven.mcsmp4j.event;
 import static java.util.Objects.requireNonNull;
 
 /**
- * World upgrade failed.
+ * Event emitted when a world upgrade fails.
  *
- * <p>This event is decoded from the upcoming {@code minecraft:notification/world/upgrade_failed} notification.
- * It is only emitted by protocol versions that advertise world-upgrade notifications.</p>
+ * <p>This event is created from a JSON-RPC notification received over the active WebSocket. It is delivered only to
+ * listeners registered before the notification is processed and is not stored for replay. Use the corresponding typed
+ * API to read an initial snapshot before subscribing when your application maintains local state.</p>
  *
- * @param reason the server-provided failure reason
+ * @param reason human-readable failure reason supplied by the server
  */
 public record WorldUpgradeFailedEvent(
         String reason
