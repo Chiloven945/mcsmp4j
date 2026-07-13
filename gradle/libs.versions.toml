@@ -1,7 +1,7 @@
 [versions]
 jackson = "3.2.0"
 jspecify = "1.0.0"
-junit = "6.1.1"
+junit = "6.1.2"
 assertj = "3.27.7"
 jreleaser = "1.25.0"
 
